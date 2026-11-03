@@ -1,0 +1,6 @@
+savePrefix: ""
+autoInstallPeers: true
+# postinstall 스크립트 실행 여부 (pnpm 11 은 미지정 시 에러). 아래는 모두 알림 출력만 하는 스크립트라 실행하지 않아도 무관.
+allowBuilds:
+  esbuild: false
+  unrs-resolver: false

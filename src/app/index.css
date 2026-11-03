@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans:
+    Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
+    "Apple SD Gothic Neo", "Noto Sans KR", "Noto Sans JP", sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* 배경·표면 */
+  --color-paper-50: #fcfcfb;
+  --color-paper-100: #f5f5f2;
+  --color-paper-200: #e8e8e3;
+
+  /* 텍스트 */
+  --color-ink-900: #1f2328;
+  --color-ink-600: #59636e;
+  --color-ink-400: #9aa4ae;
+
+  /* 포인트 (업로드·번역 진행) */
+  --color-accent-500: #2f6feb;
+  --color-accent-600: #1f5fd8;
+
+  /* 상태 */
+  --color-success-500: #1a7f37;
+  --color-success-100: #dcf3e3;
+  --color-warning-500: #b7640a;
+  --color-warning-100: #fbecd6;
+  --color-danger-500: #cf222e;
+  --color-danger-100: #fde7e9;
+  --color-accent-100: #e4ebfa;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-paper-100 text-ink-900 min-h-dvh font-sans;
+  }
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+}
