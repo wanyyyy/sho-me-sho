@@ -3,7 +3,7 @@
 일본 관공서에서 발급한 수리증명서(受理証明書) 사진이나 PDF 를 올리면 내용을 읽어 한국어 양식에 채우고, 틀린 칸은 직접 고쳐 인쇄·PDF 로 저장하는 웹 앱.
 
 - 업로드: JPG · PNG · WEBP · HEIC(아이폰) · PDF, 20MB 이하
-- 읽기·번역: 이미지를 서버 함수(`/api/extract`)로 보내 항목별 값(원문·번역·신뢰도)을 JSON 으로 받아 양식 칸에 채움 (모델은 미정이라 서버 엔진은 아직 샘플)
+- 읽기·번역: 이미지를 서버 함수(`/api/extract`)로 보내 Gemini 가 항목별 값(원문·번역·신뢰도)을 JSON 으로 돌려주면 양식 칸에 채움. 실제 증명서 1장 기준 약 13초, 입력 2.8K · 출력 1.8K 토큰
 - 편집: 원본과 양식을 나란히 놓고 칸 단위로 수정. 신뢰도가 낮거나 인명인 칸은 "확인 필요" 표시
 - 출력: 원본 표 구조를 그대로 따른 한국어 양식 + 번역 확인서(번역일·번역자·관계)를 가로 A4 로 인쇄·PDF 저장
 - 모바일: 좁은 화면에서는 표 대신 세로 목록으로 편집, 미리보기는 화면 폭에 맞게 축소
@@ -86,7 +86,9 @@ api/
     log.ts          호출 로그 한 줄 (내용은 남기지 않음)
     engine.ts       ServerExtractor 인터페이스 · EXTRACT_ENGINE 으로 엔진 선택
     engines/
-      sample.ts     모델 미정 동안 쓰는 샘플 엔진
+      sample.ts     샘플 데이터 엔진 (키 없이 개발할 때)
+      gemini.ts     Gemini 엔진 (@google/genai · JSON 스키마 강제 응답 · 생각 수준 low)
+      gemini.prompt.ts  양식 선언(MARRIAGE_FIELDS)에서 지시문과 응답 스키마를 생성
 ```
 
 `api/` 와 거기서 가져오는 src 파일의 상대 import 는 `.ts` 확장자를 붙입니다 (`api/tsconfig.json` 의 `rewriteRelativeImportExtensions`). Vercel 빌더가 파일 단위로 변환만 하고 경로는 안 고치기 때문에, 확장자가 없으면 Node ESM 런타임에서 모듈을 찾지 못해 500 이 납니다.
@@ -96,7 +98,7 @@ api/
 ## 배포 (Vercel)
 
 1. Vercel 에서 GitHub 저장소를 import 합니다. Vite 프로젝트로 자동 인식되고 `api/` 는 서버리스 함수로 올라갑니다 (`vercel.json`: SPA rewrite, 함수 60초).
-2. 환경변수를 넣습니다: `VITE_ACCESS_CODE_HASH`(접근 코드 해시), `EXTRACT_ENGINE`(지금은 `sample`), `DAILY_LIMIT_PER_IP`. 모델을 정하면 그 API 키를 추가합니다.
+2. 환경변수를 넣습니다: `VITE_ACCESS_CODE_HASH`(접근 코드 해시, Config 유형), `EXTRACT_ENGINE=gemini`, `GEMINI_API_KEY`(Secret), `DAILY_LIMIT_PER_IP`. 모델을 바꾸려면 `GEMINI_MODEL`.
 3. `git push` 하면 빌드·배포됩니다. 로그는 Vercel 대시보드의 함수 로그에서 봅니다.
 
 ## Scripts
@@ -142,6 +144,6 @@ src/
 
 ## 다음 단계 (미정)
 
-- 모델 선택 (Claude · Gemini · GPT 를 같은 샘플로 비교) 후 `api/_lib/engines/` 에 실제 엔진 추가
+- 다른 모델(Claude · GPT)도 같은 `ServerExtractor` 로 붙여 같은 증명서로 비교
 - IP 한도를 KV(Upstash Redis 등)로 옮겨 인스턴스와 무관하게 정확히 세기
 - 모델 제공사 콘솔의 월 지출 상한 설정

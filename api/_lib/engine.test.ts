@@ -15,4 +15,10 @@ describe("selectEngine", () => {
   it("모르는 이름이면 바로 실패한다", () => {
     expect(() => selectEngine("nope")).toThrow(/알 수 없는 엔진/);
   });
+
+  it("gemini 는 키가 없으면 선택 시점에 실패한다", () => {
+    vi.stubEnv("GEMINI_API_KEY", "");
+    expect(() => selectEngine("gemini")).toThrow(/GEMINI_API_KEY/);
+    vi.unstubAllEnvs();
+  });
 });
