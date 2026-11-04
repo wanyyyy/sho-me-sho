@@ -27,7 +27,7 @@ function AccessForm() {
   };
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-sm flex-col justify-center gap-6 py-12">
+    <main className="mx-auto my-auto flex w-full max-w-sm flex-col gap-6 py-12">
       <header className="flex flex-col gap-2">
         <p className="text-accent-500 text-xs tracking-[0.3em]">
           受理証明書 TRANSLATOR

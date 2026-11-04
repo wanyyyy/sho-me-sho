@@ -13,7 +13,7 @@ export function EditorPage() {
   if (!doc) return <Navigate to={routePaths.home()} replace />;
 
   return (
-    <main className="flex min-h-dvh flex-col gap-4 pb-24 sm:gap-5 sm:pb-12">
+    <main className="flex flex-col gap-4 pb-6 sm:gap-5 sm:pb-8">
       <EditorToolbar actions={<ExportButton />} />
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_1.2fr] lg:gap-6">
         <SourcePanel />

@@ -40,7 +40,10 @@ export function EditorToolbar({ actions }: EditorToolbarProps) {
         </div>
       </header>
       {/* 모바일: 엄지가 닿는 하단 고정 바 */}
-      <div className="bg-paper-100/95 border-paper-200 fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-2 border-t px-4 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur sm:hidden">
+      <div
+        data-bottom-bar
+        className="bg-paper-100/95 border-paper-200 fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-2 border-t px-4 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur sm:hidden"
+      >
         {reset}
         {actions}
       </div>
