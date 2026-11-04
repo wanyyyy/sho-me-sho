@@ -61,7 +61,6 @@ export function UploadDropzone({ onSelect, loading }: UploadDropzoneProps) {
             <span role="status" className="text-base font-medium">
               {LOADING_LABEL}
             </span>
-            <span className="text-ink-600 text-sm">10초 안팎 걸립니다</span>
           </>
         ) : (
           <>
