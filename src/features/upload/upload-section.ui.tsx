@@ -14,14 +14,11 @@ export function UploadSection() {
 
   return (
     <section className="flex flex-col gap-4">
-      <UploadDropzone onSelect={run} disabled={isPending} />
+      <UploadDropzone onSelect={run} loading={isPending} />
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-        <p className="text-ink-600 text-sm" aria-live="polite">
-          {isPending
-            ? "증명서를 읽고 번역하는 중…"
-            : isError
-              ? `읽기에 실패했습니다. 다시 시도해 주세요. (${error.message})`
-              : "읽기·번역은 10초 안팎 걸립니다. 아이폰 HEIC 사진도 올릴 수 있습니다."}
+        <p role="alert" className="text-danger-500 text-sm">
+          {isError &&
+            `읽기에 실패했습니다. 다시 시도해 주세요. (${error.message})`}
         </p>
         <Button
           variant="ghost"
