@@ -3,10 +3,11 @@ import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 import tsconfigPaths from "vite-tsconfig-paths";
 import { defineConfig } from "vitest/config";
+import { apiRoutes } from "./vite.api-routes";
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), tailwindcss(), tsconfigPaths(), svgr()],
+  plugins: [react(), tailwindcss(), tsconfigPaths(), svgr(), apiRoutes()],
   ...(mode === "dev" && {
     build: {
       sourcemap: true,

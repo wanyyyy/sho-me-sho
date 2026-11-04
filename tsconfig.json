@@ -37,6 +37,6 @@
       "@/shared/*": ["./src/shared/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "api", "vite.api-routes.ts"],
   "exclude": ["node_modules", "dist"]
 }

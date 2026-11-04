@@ -36,7 +36,7 @@ const baseConfig = defineConfig(
     extends: [tseslint.configs.disableTypeChecked],
   },
   {
-    files: ["scripts/**/*.mjs"],
+    files: ["scripts/**/*.mjs", "api/**/*.ts", "vite.api-routes.ts"],
     languageOptions: { globals: globals.node },
   },
 );
@@ -145,6 +145,12 @@ const fsdImportConfig = defineConfig({
   },
 });
 
+/** apiConfig — 서버 함수는 FSD 바깥. src 의 계약·샘플을 상대 경로로 가져오는 것이 의도된 사용 */
+const apiConfig = defineConfig({
+  files: ["api/**/*.ts"],
+  rules: { "no-restricted-imports": "off" },
+});
+
 /** vitestConfig */
 const vitestConfig = defineConfig({
   files: ["**/?(*.)+(test|spec).{js,jsx,ts,tsx}"],
@@ -179,6 +185,7 @@ export default defineConfig(
   ...reactConfig,
   ...reactQueryConfig,
   ...fsdImportConfig,
+  ...apiConfig,
   ...vitestConfig,
   ...reactTestingLibraryConfig,
   ...prettierConfig,
