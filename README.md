@@ -89,6 +89,8 @@ api/
       sample.ts     모델 미정 동안 쓰는 샘플 엔진
 ```
 
+`api/` 와 거기서 가져오는 src 파일의 상대 import 는 `.ts` 확장자를 붙입니다 (`api/tsconfig.json` 의 `rewriteRelativeImportExtensions`). Vercel 빌더가 파일 단위로 변환만 하고 경로는 안 고치기 때문에, 확장자가 없으면 Node ESM 런타임에서 모듈을 찾지 못해 500 이 납니다.
+
 모델을 정하면 `api/_lib/engines/<이름>.ts` 에 `ServerExtractor` 구현 하나를 추가하고 `engine.ts` 의 `ENGINES` 에 등록한 뒤 `EXTRACT_ENGINE=<이름>` 으로 고릅니다. API 키는 서버 환경변수에만 둡니다. 응답 계약(`ExtractionResultSchema`)과 샘플은 `src/entities/certificate` 의 것을 상대 경로로 그대로 가져다 써서 브라우저와 서버가 같은 형태를 검증합니다.
 
 ## 배포 (Vercel)

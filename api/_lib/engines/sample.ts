@@ -1,5 +1,5 @@
-import { SAMPLE_EXTRACTION } from "../../../src/entities/certificate/certificate.mock";
-import type { ServerExtractor } from "../engine";
+import { SAMPLE_EXTRACTION } from "../../../src/entities/certificate/certificate.mock.ts";
+import type { ServerExtractor } from "../engine.ts";
 
 const DELAY_MS = 600;
 

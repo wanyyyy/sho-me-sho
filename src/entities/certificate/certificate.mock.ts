@@ -1,5 +1,5 @@
-import { ExtractionResult } from "./certificate.types";
-import { K } from "./marriage.template";
+import type { ExtractionResult } from "./certificate.types.ts";
+import { K } from "./marriage.template.ts";
 
 const hi = (ja: string, ko: string) =>
   ({ ja, ko, confidence: "high" }) as const;

@@ -1,5 +1,5 @@
-import type { ExtractionResult } from "../../src/entities/certificate/certificate.types";
-import { sampleEngine } from "./engines/sample";
+import type { ExtractionResult } from "../../src/entities/certificate/certificate.types.ts";
+import { sampleEngine } from "./engines/sample.ts";
 
 /** 서버가 모델에 넘기는 입력. 클라이언트가 이미 JPEG 한 장으로 만들어 보낸다 */
 export type ImageInput = {

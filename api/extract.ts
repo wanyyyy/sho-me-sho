@@ -1,14 +1,14 @@
-import { verifyAccessCode } from "./_lib/access";
-import { selectEngine, type EngineUsage } from "./_lib/engine";
+import { verifyAccessCode } from "./_lib/access.ts";
+import { selectEngine, type EngineUsage } from "./_lib/engine.ts";
 import {
   accessCodeOf,
   clientIp,
   HttpError,
   json,
   readUpload,
-} from "./_lib/http";
-import { logRequest } from "./_lib/log";
-import { createMemoryRateLimiter, dailyLimit } from "./_lib/rate-limit";
+} from "./_lib/http.ts";
+import { logRequest } from "./_lib/log.ts";
+import { createMemoryRateLimiter, dailyLimit } from "./_lib/rate-limit.ts";
 
 /** 따뜻한 인스턴스가 살아 있는 동안 유지되는 IP 별 횟수 */
 const limiter = createMemoryRateLimiter(dailyLimit());

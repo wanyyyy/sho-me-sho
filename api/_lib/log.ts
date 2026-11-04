@@ -1,4 +1,4 @@
-import type { EngineUsage } from "./engine";
+import type { EngineUsage } from "./engine.ts";
 
 export type RequestLog = {
   ip: string;

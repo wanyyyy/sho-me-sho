@@ -1,10 +1,10 @@
-import { z } from "zod";
-import {
+import type { z } from "zod";
+import type {
   ConfidenceSchema,
   DocumentTypeSchema,
   ExtractedFieldSchema,
   ExtractionResultSchema,
-} from "./certificate.contracts";
+} from "./certificate.contracts.ts";
 
 export type Confidence = z.infer<typeof ConfidenceSchema>;
 export type DocumentType = z.infer<typeof DocumentTypeSchema>;

@@ -1,4 +1,4 @@
-import { TemplateField } from "./certificate.types";
+import type { TemplateField } from "./certificate.types.ts";
 
 /** 사건본인 행 수 (원본 양식 고정) */
 export const PERSON_ROWS = [0, 1, 2, 3] as const;

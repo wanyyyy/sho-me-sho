@@ -1,5 +1,5 @@
-import { MAX_FILE_BYTES } from "../../src/shared/lib/file/file-kind.lib";
-import type { ImageInput } from "./engine";
+import { MAX_FILE_BYTES } from "../../src/shared/lib/file/file-kind.lib.ts";
+import type { ImageInput } from "./engine.ts";
 
 /** 클라이언트가 보내는 형식. HEIC·PDF 는 브라우저에서 이미 JPEG 로 바꿔 보낸다 */
 const ALLOWED_MIME = ["image/jpeg", "image/png", "image/webp"];

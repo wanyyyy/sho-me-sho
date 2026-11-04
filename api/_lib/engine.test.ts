@@ -1,5 +1,5 @@
-import { ExtractionResultSchema } from "../../src/entities/certificate/certificate.contracts";
-import { selectEngine } from "./engine";
+import { ExtractionResultSchema } from "../../src/entities/certificate/certificate.contracts.ts";
+import { selectEngine } from "./engine.ts";
 
 describe("selectEngine", () => {
   it("sample 엔진은 계약에 맞는 결과를 돌려준다", async () => {

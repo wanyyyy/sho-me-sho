@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { accessCodeHash, verifyAccessCode } from "./access";
+import { accessCodeHash, verifyAccessCode } from "./access.ts";
 
 const sha = (s: string) => createHash("sha256").update(s).digest("hex");
 

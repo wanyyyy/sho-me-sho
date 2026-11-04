@@ -2,7 +2,7 @@ import {
   createMemoryRateLimiter,
   dailyLimit,
   DEFAULT_DAILY_LIMIT,
-} from "./rate-limit";
+} from "./rate-limit.ts";
 
 describe("createMemoryRateLimiter", () => {
   it("한도까지만 허용하고 남은 횟수를 돌려준다", () => {
