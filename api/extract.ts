@@ -1,5 +1,9 @@
-import { verifyAccessCode } from "./_lib/access.ts";
-import { selectEngine, type EngineUsage } from "./_lib/engine.ts";
+import { accessCodeHash, verifyAccessCode } from "./_lib/access.ts";
+import {
+  DEFAULT_ENGINE,
+  type EngineUsage,
+  selectEngine,
+} from "./_lib/engine.ts";
 import {
   accessCodeOf,
   clientIp,
@@ -9,6 +13,18 @@ import {
 } from "./_lib/http.ts";
 import { logRequest } from "./_lib/log.ts";
 import { createMemoryRateLimiter, dailyLimit } from "./_lib/rate-limit.ts";
+
+const HEX_64 = /^[0-9a-f]{64}$/;
+
+/** GET /api/extract — 설정 점검용. 해시 값 자체는 내보내지 않고 "있는지·형식이 맞는지"만 알려 준다 */
+export async function GET(): Promise<Response> {
+  const hash = accessCodeHash();
+  return json({
+    engine: process.env.EXTRACT_ENGINE ?? DEFAULT_ENGINE,
+    dailyLimit: dailyLimit(),
+    gate: hash ? (HEX_64.test(hash) ? "on" : "invalid-hash") : "off",
+  });
+}
 
 /** 따뜻한 인스턴스가 살아 있는 동안 유지되는 IP 별 횟수 */
 const limiter = createMemoryRateLimiter(dailyLimit());
