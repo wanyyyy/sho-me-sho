@@ -18,6 +18,7 @@ export type {
   TemplateField,
 } from "./certificate.types";
 export { extractor } from "./extractor.lib";
+export { mockExtractor } from "./mock-extractor.lib";
 export {
   K as FIELD_KEYS,
   MARRIAGE_FIELD_MAP,

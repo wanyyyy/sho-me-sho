@@ -1,11 +1,12 @@
+import { canvasToJpegFile } from "@/shared/lib/image";
+
 const SCALE = 2;
-const JPEG_QUALITY = 0.9;
 
 /**
- * PDF 첫 페이지를 JPEG 로 렌더해 object URL 로 돌려준다 (미리보기용).
+ * PDF 첫 페이지를 JPEG File 로 렌더한다 (미리보기와 서버 전송에 같이 쓴다).
  * pdf.js 는 무거우므로 PDF 를 실제로 올렸을 때만 로드한다
  */
-export async function renderPdfFirstPage(file: File): Promise<string> {
+export async function renderPdfFirstPage(file: File): Promise<File> {
   const [pdfjs, { default: workerUrl }] = await Promise.all([
     import("pdfjs-dist"),
     import("pdfjs-dist/build/pdf.worker.min.mjs?url"),
@@ -23,11 +24,7 @@ export async function renderPdfFirstPage(file: File): Promise<string> {
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("canvas 를 만들 수 없습니다");
     await page.render({ canvas, canvasContext: ctx, viewport }).promise;
-    const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, "image/jpeg", JPEG_QUALITY),
-    );
-    if (!blob) throw new Error("미리보기 이미지를 만들 수 없습니다");
-    return URL.createObjectURL(blob);
+    return canvasToJpegFile(canvas, file.name);
   } finally {
     await task.destroy();
   }

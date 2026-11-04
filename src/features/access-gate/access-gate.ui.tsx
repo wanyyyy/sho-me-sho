@@ -22,7 +22,7 @@ function AccessForm() {
     setChecking(true);
     const ok = await verifyAccessCode(code);
     setChecking(false);
-    if (ok) unlock();
+    if (ok) unlock(code);
     else setError(true);
   };
 

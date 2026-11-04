@@ -1,29 +1,16 @@
 import { create } from "zustand";
-
-const KEY = "access-unlocked";
-
-/** 탭 단위로만 기억 (sessionStorage). 개인정보가 아니라 "이 탭에서 코드를 통과했다"는 표시 */
-function readUnlocked(): boolean {
-  try {
-    return sessionStorage.getItem(KEY) === "1";
-  } catch {
-    return false;
-  }
-}
+import { readAccessCode, writeAccessCode } from "@/shared/lib/access-code";
 
 type AccessState = {
   unlocked: boolean;
-  unlock: () => void;
+  /** 검증을 통과한 코드를 탭에 둔다. 서버 호출 때 같은 코드를 보낸다 */
+  unlock: (code: string) => void;
 };
 
 export const useAccessStore = create<AccessState>()((set) => ({
-  unlocked: readUnlocked(),
-  unlock: () => {
-    try {
-      sessionStorage.setItem(KEY, "1");
-    } catch {
-      // 저장 못 해도 이 탭 안에서는 열린 상태 유지
-    }
+  unlocked: readAccessCode() !== "",
+  unlock: (code) => {
+    writeAccessCode(code.trim());
     set({ unlocked: true });
   },
 }));
