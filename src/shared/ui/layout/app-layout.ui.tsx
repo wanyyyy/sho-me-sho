@@ -3,10 +3,14 @@ import { cn } from "@/shared/lib/utils";
 type AppLayoutProps = { className?: string; children: React.ReactNode };
 
 export const CONTACT_EMAIL = "wanylog@naver.com";
+/** 카카오톡 오픈채팅 (문의·접근 코드 요청·후원) */
+export const CONTACT_OPEN_CHAT_URL = "https://open.kakao.com/o/sBl8EQVi";
+
+const linkClassName = "hover:text-ink-600 underline-offset-2 hover:underline";
 
 /**
  * 앱 공통 프레임. 데스크톱 중심(문서 업로드·번역 편집)이므로 최대 1200px 중앙 정렬,
- * 모바일에서는 좌우 16px 여백만 둔다. 문의 푸터는 어느 화면에서나 보인다.
+ * 모바일에서는 좌우 16px 여백만 둔다. 문의·후원 푸터는 어느 화면에서나 보인다.
  * 안쪽에 data-bottom-bar(모바일 하단 고정 바)가 있으면 그 높이만큼 아래 여백을 더한다
  */
 export function AppLayout({ className, children }: AppLayoutProps) {
@@ -18,13 +22,21 @@ export function AppLayout({ className, children }: AppLayoutProps) {
       )}
     >
       <div className="flex flex-1 flex-col">{children}</div>
-      <footer className="text-ink-400 border-paper-200 mt-8 border-t py-4 text-center text-xs">
-        문의{" "}
+      <footer className="text-ink-400 border-paper-200 mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 border-t py-4 text-center text-xs">
+        <span>
+          문의 · 후원{" "}
+          <a href={`mailto:${CONTACT_EMAIL}`} className={linkClassName}>
+            {CONTACT_EMAIL}
+          </a>
+        </span>
+        <span aria-hidden>|</span>
         <a
-          href={`mailto:${CONTACT_EMAIL}`}
-          className="hover:text-ink-600 underline-offset-2 hover:underline"
+          href={CONTACT_OPEN_CHAT_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={linkClassName}
         >
-          {CONTACT_EMAIL}
+          카카오톡 오픈채팅
         </a>
       </footer>
     </div>
