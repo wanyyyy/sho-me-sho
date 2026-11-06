@@ -8,6 +8,7 @@ import {
   type ExtractionResult,
 } from "@/entities/certificate";
 import { BASIC_SAMPLE, BASIC_TEMPLATE, BasicSheet } from "@/features/basic";
+import { FAMILY_SAMPLE, FAMILY_TEMPLATE, FamilySheet } from "@/features/family";
 import {
   MARRIAGE_SAMPLE,
   MARRIAGE_TEMPLATE,
@@ -24,6 +25,11 @@ export type DocumentEntry = {
 /** 서류 종류 → 메뉴. 홈 메뉴 순서이기도 하다. 서류 feature 를 추가하면 여기에 등록 */
 export const DOCUMENTS: Record<DocumentType, DocumentEntry> = {
   basic: { template: BASIC_TEMPLATE, Sheet: BasicSheet, sample: BASIC_SAMPLE },
+  family: {
+    template: FAMILY_TEMPLATE,
+    Sheet: FamilySheet,
+    sample: FAMILY_SAMPLE,
+  },
   marriage: {
     template: MARRIAGE_TEMPLATE,
     Sheet: MarriageSheet,
