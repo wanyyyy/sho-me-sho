@@ -1,5 +1,6 @@
 import { cn } from "@/shared/lib/utils";
 import {
+  SealMark,
   sheetCellClass,
   sheetFrameClassName,
   type SheetProps,
@@ -12,18 +13,6 @@ import {
   SHEET_LABELS,
   SUMMARY_ROWS,
 } from "./marriage.model";
-
-/** 원본의 공인(公印) 자리. 붉은 사각 테두리 안에 "직인" — 번역본임을 나타내는 표시이며 실제 도장을 대신하지 않는다 */
-function SealMark() {
-  return (
-    <span
-      aria-label={SHEET_LABELS.seal}
-      className="border-danger-500 text-danger-500 inline-flex h-11 w-11 shrink-0 items-center justify-center border-[2.5px] text-[13px] leading-none font-bold tracking-[0.2em] [print-color-adjust:exact]"
-    >
-      {SHEET_LABELS.seal}
-    </span>
-  );
-}
 
 const { head, body } = sheetCellClass;
 
@@ -154,7 +143,7 @@ export function MarriageSheet({
         <div className="w-[8rem] text-base tracking-[0.3em]">
           {cell(K.issuerName)}
         </div>
-        <SealMark />
+        <SealMark label={SHEET_LABELS.seal} />
       </div>
       {/* 용지 높이가 남으면 맨 아래에 붙는다 */}
       {footer && <div className="mt-auto pt-6">{footer}</div>}

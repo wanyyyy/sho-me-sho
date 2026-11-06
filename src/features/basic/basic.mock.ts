@@ -105,7 +105,5 @@ export const BASIC_SAMPLE: TemplateSample<"basic"> = {
     [BK.stampDate]: hi("2026.1.11", "2026.1.11"),
     [BK.stampCode]: hi("SAD001", "SAD001"),
     [BK.stampIssuedTime]: hi("12:03:17.781", "12:03:17.781"),
-    [BK.sealLine1]: hi("OO区長之印", "OO구청장의인"),
-    [BK.sealLine2]: hi("上岩洞住民センター専用", "상암동주민센터전용"),
   },
 };

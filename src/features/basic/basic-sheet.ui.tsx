@@ -8,6 +8,7 @@ import {
 } from "@/shared/lib/template";
 import { cn } from "@/shared/lib/utils";
 import {
+  SealMark,
   sheetCellClass,
   sheetFrameClassName,
   type SheetProps,
@@ -239,10 +240,7 @@ export function BasicSheet({
           <div className="flex-1 pb-6 text-center text-[20px] font-medium tracking-wider">
             {cell(BK.issuerTitle)}
           </div>
-          <div className="border-danger-500 text-danger-500 mb-6 flex w-[7rem] flex-col items-center gap-0.5 border-2 px-1 py-2 text-center text-[9px] font-semibold [print-color-adjust:exact]">
-            {cell(BK.sealLine1)}
-            {cell(BK.sealLine2)}
-          </div>
+          <SealMark label={L.seal} className="mb-6 h-16 text-[18px]" />
         </div>
         <p className="mt-1 text-center text-[10px]">{L.noStampNote}</p>
         <PageFoot n={2} cell={cell} />

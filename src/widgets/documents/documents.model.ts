@@ -23,16 +23,16 @@ export type DocumentEntry = {
 
 /** 서류 종류 → 메뉴. 홈 메뉴 순서이기도 하다. 서류 feature 를 추가하면 여기에 등록 */
 export const DOCUMENTS: Record<DocumentType, DocumentEntry> = {
+  basic: { template: BASIC_TEMPLATE, Sheet: BasicSheet, sample: BASIC_SAMPLE },
   marriage: {
     template: MARRIAGE_TEMPLATE,
     Sheet: MarriageSheet,
     sample: MARRIAGE_SAMPLE,
   },
-  basic: { template: BASIC_TEMPLATE, Sheet: BasicSheet, sample: BASIC_SAMPLE },
 };
 
-export const DOCUMENT_TYPES: readonly DocumentType[] =
-  DocumentTypeSchema.options;
+/** 홈 메뉴 순서 = 위 등록 순서 */
+export const DOCUMENT_TYPES = Object.keys(DOCUMENTS) as DocumentType[];
 
 export const documentOf = (type: DocumentType): DocumentEntry =>
   DOCUMENTS[type];

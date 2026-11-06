@@ -157,8 +157,7 @@ export const MARRIAGE_TEMPLATE: DocumentTemplate<"marriage"> = {
   source: "ja",
   target: "ko",
   title: { ja: SHEET_LABELS.titleJa, ko: "수리증명서" },
-  description:
-    "일본 관공서가 발행한 혼인신고 수리증명서를 한국 구청 제출용 한국어 양식으로",
+  description: "수리증명서 → 구청 제출용 한국어 양식",
   orientation: "landscape",
   fields: MARRIAGE_FIELDS,
   repeats: [],

@@ -30,8 +30,6 @@ export const BK = {
   stampDate: "stamp.date",
   stampCode: "stamp.code",
   stampIssuedTime: "stamp.issuedTime",
-  sealLine1: "seal.line1",
-  sealLine2: "seal.line2",
 } as const;
 
 const f = (
@@ -67,8 +65,6 @@ export const BASIC_FIELDS: TemplateField[] = [
   f(BK.stampDate, "수입증지 날짜", "収入証紙 日付"),
   f(BK.stampCode, "수입증지 코드", "収入証紙 コード", "number"),
   f(BK.stampIssuedTime, "증지발행시각", "証紙発行時刻"),
-  f(BK.sealLine1, "직인 1행", "職印 1行目"),
-  f(BK.sealLine2, "직인 2행", "職印 2行目"),
 ];
 
 const detailRow = (): RepeatGroup["fields"] => [
@@ -121,6 +117,7 @@ export const BASIC_LABELS = {
   applicant: "申請人",
   stampIssuedTime: "証紙発行時刻",
   noStampNote: "（収入証紙が印影されていない証明は、その効力を保証できません）",
+  seal: "職印",
   pageOf: (n: number) => `${n} / 2`,
 } as const;
 
@@ -153,7 +150,7 @@ function sections(doc: TemplateDocument) {
       keys: [BK.issuedTime, BK.issuerOfficer, BK.issuerPhone, BK.applicant],
     },
     {
-      title: "수입증지·직인 (2쪽)",
+      title: "수입증지 (2쪽)",
       keys: [
         BK.stampSerial,
         BK.stampOffice,
@@ -161,8 +158,6 @@ function sections(doc: TemplateDocument) {
         BK.stampDate,
         BK.stampCode,
         BK.stampIssuedTime,
-        BK.sealLine1,
-        BK.sealLine2,
       ],
     },
   ];
@@ -178,7 +173,7 @@ export const BASIC_TEMPLATE: DocumentTemplate<"basic"> = {
   target: "ja",
   title: { ko: "기본증명서(상세)", ja: "基本証明書(詳細)" },
   description:
-    "한국 기본증명서(상세)를 일본 시약소 제출용 일본어 양식으로. 2쪽(발급 정보)까지 함께 올리면 같이 읽습니다",
+    "기본증명서(상세) → 시약소 제출용 일본어 양식 (3쪽까지 첨부 가능)",
   orientation: "portrait",
   fields: BASIC_FIELDS,
   repeats: [BASIC_REPEATS.history, BASIC_REPEATS.general],
@@ -194,7 +189,7 @@ export const BASIC_TEMPLATE: DocumentTemplate<"basic"> = {
       "구분: 작성 → 作成, 정정 → 訂正, 출생 → 出生, 개명 → 改名, 국적 → 国籍. 항목명: 가족관계등록부작성일 → 家族関係登録簿作成日, 작성사유 → 作成事由, 도로명주소기록일 → 道路名住所記録日, 경정전 → 更訂前, 경정후 → 更訂後, 경정사유 → 更訂事由, 출생장소 → 出生場所, 신고일 → 申告日, 신고인 → 申告人.",
       "history 는 등록기준지 아래 첫 번째 '구분/상세내용' 표, general 은 '일반등록사항' 아래 표. 대괄호 [항목] 줄 하나가 행 하나이며, label 에는 대괄호를 뺀 항목명, value 에는 그 줄의 값만 넣는다. 같은 구분이 여러 줄이면 category 를 줄마다 반복한다.",
       '발급기관장은 "서울특별시 마포구청장 유동균" 처럼 직함과 성명이 붙어 있다. issuerTitle 에 직함(ja 예: ソウル特別市 麻浦区長), issuerName 에 성명.',
-      "2쪽 항목(발급시각·발급담당자·전화·신청인·수입증지·직인)은 2쪽 이미지에서 읽는다. 수입증지는 왼쪽 아래 둥근 네모 안의 줄(번호·관서·금액·날짜·코드)과 그 아래 증지발행시각, 직인은 오른쪽 빨간 네모 안의 두 줄. 2쪽이 없으면 ja·ko 모두 빈 문자열.",
+      "2쪽 항목(발급시각·발급담당자·전화·신청인·수입증지)은 2쪽 이미지에서 읽는다. 수입증지는 왼쪽 아래 둥근 네모 안의 줄(번호·관서·금액·날짜·코드)과 그 아래 증지발행시각. 직인(도장)은 읽지 않는다. 2쪽이 없으면 ja·ko 모두 빈 문자열.",
     ],
   },
   sections,
