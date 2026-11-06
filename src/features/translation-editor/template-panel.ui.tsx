@@ -1,10 +1,11 @@
-import { useMemo } from "react";
+import { type ComponentType, useMemo } from "react";
+import type { SheetProps } from "@/shared/ui";
 import {
-  CertificateSheet,
+  CertificateDocument,
   countStatuses,
   fieldStatuses,
   fieldValue,
-  MARRIAGE_FIELDS,
+  sourceValue,
   useCertificateDocument,
   useCertificateStore,
 } from "@/entities/certificate";
@@ -14,17 +15,24 @@ import { PanelHeader } from "./panel-header.ui";
 import { StatusChip } from "./status-chip.ui";
 import { TranslatorEditor } from "./translator-editor.ui";
 
-/** 오른쪽: 한국어 양식을 그대로 그리고, 칸마다 input 을 넣는다 */
-export function TemplatePanel() {
+const SOURCE_LANG_LABEL = { ja: "일본어", ko: "한국어" } as const;
+
+type TemplatePanelProps = {
+  /** 문서 종류에 맞는 양식 시트 (widgets/documents 가 고른다) */
+  Sheet: ComponentType<SheetProps<CertificateDocument>>;
+};
+
+/** 오른쪽: 번역 양식을 그대로 그리고, 칸마다 input 을 넣는다 */
+export function TemplatePanel({ Sheet }: TemplatePanelProps) {
   const doc = useCertificateDocument();
   const edit = useCertificateStore((s) => s.edit);
-  const statuses = useMemo(
-    () => (doc ? fieldStatuses(doc, MARRIAGE_FIELDS) : {}),
-    [doc],
-  );
+  const statuses = useMemo(() => (doc ? fieldStatuses(doc) : {}), [doc]);
   if (!doc) return null;
 
+  const { template } = doc;
   const counts = countStatuses(statuses);
+  const minWidth =
+    template.orientation === "landscape" ? "min-w-[560px]" : "min-w-[520px]";
 
   return (
     <section aria-label="번역 양식" className="flex min-w-0 flex-col gap-3">
@@ -42,29 +50,30 @@ export function TemplatePanel() {
       <div className="border-paper-200 rounded-lg border bg-white p-4 md:hidden">
         <FieldList doc={doc} statuses={statuses} onChange={edit} />
         <div className="border-paper-200 mt-5 border-t pt-4">
-          <TranslatorEditor />
+          <TranslatorEditor lang={template.target} />
         </div>
       </div>
       {/* 넓은 화면: 양식 표 그대로 */}
       <div className="border-paper-200 hidden overflow-x-auto rounded-lg border bg-white p-4 md:block">
-        <CertificateSheet
-          className="min-w-[560px]"
+        <Sheet
+          className={minWidth}
           doc={doc}
           cell={(field) => (
             <EditableCell
               field={field}
               value={fieldValue(doc, field.key)}
-              source={doc.extracted[field.key]?.ja}
-              status={statuses[field.key]}
+              source={sourceValue(doc, field.key)}
+              status={statuses[field.key] ?? "missing"}
               onChange={edit}
             />
           )}
-          footer={<TranslatorEditor />}
+          value={(key) => fieldValue(doc, key)}
+          footer={<TranslatorEditor lang={template.target} />}
         />
       </div>
       <p className="text-ink-400 hidden text-xs md:block">
-        칸 위에 마우스를 올리면 일본어 원문이 보입니다. 노란 칸은 신뢰도가
-        낮거나 인명이라 확인이 필요한 곳입니다.
+        칸 위에 마우스를 올리면 {SOURCE_LANG_LABEL[template.source]} 원문이
+        보입니다. 노란 칸은 신뢰도가 낮거나 인명이라 확인이 필요한 곳입니다.
       </p>
     </section>
   );

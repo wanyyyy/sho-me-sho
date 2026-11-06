@@ -1,4 +1,8 @@
-import type { TemplateField } from "./certificate.types.ts";
+import type {
+  DocumentTemplate,
+  TemplateField,
+  TemplateSection,
+} from "@/shared/lib/template";
 
 /** 사건본인 행 수 (원본 양식 고정) */
 export const PERSON_ROWS = [0, 1, 2, 3] as const;
@@ -95,8 +99,6 @@ export const MARRIAGE_FIELDS: TemplateField[] = [
 export const MARRIAGE_FIELD_MAP: Record<string, TemplateField> =
   Object.fromEntries(MARRIAGE_FIELDS.map((field) => [field.key, field]));
 
-export type TemplateSection = { title: string; keys: string[] };
-
 /** 좁은 화면용 세로 목록에서 쓰는 묶음. 표의 행 순서와 같다 */
 export const MARRIAGE_SECTIONS: TemplateSection[] = [
   { title: "신고", keys: [K.notificationType, K.notifiedAt] },
@@ -146,3 +148,32 @@ export const SHEET_LABELS = {
     `위 신고는 ${acceptedAt || "____년 __월 __일"} 수리하였음을 증명함.`,
   seal: "직인",
 } as const;
+
+/**
+ * 수리증명서 템플릿. 일본어 원문 → 한국어 번역. 가변 행 없이 원본 양식의 행 수가 고정이다
+ */
+export const MARRIAGE_TEMPLATE: DocumentTemplate<"marriage"> = {
+  type: "marriage",
+  source: "ja",
+  target: "ko",
+  title: { ja: SHEET_LABELS.titleJa, ko: "수리증명서" },
+  description:
+    "일본 관공서가 발행한 혼인신고 수리증명서를 한국 구청 제출용 한국어 양식으로",
+  orientation: "landscape",
+  fields: MARRIAGE_FIELDS,
+  repeats: [],
+  prompt: {
+    intro:
+      "이 이미지는 일본 관공서가 발행한 수리증명서(受理証明書)다. 표의 각 칸을 읽어 아래 키에 맞춰 채워라.",
+    rules: [
+      "ko: ja 의 자연스러운 한국어 번역. 지명·주소는 한글 음역(예: 東京都新宿区 → 도쿄도 신주쿠구).",
+      '원본에서 비공개 처리된 칸(＊ 또는 검게 가려짐)은 ja·ko 모두 "＊＊＊＊＊".',
+      "사건본인 행은 위에서부터 1~4. 없는 행은 빈 문자열로 둔다.",
+      "続柄(관계)의 ko 는 양식 관례대로 妻 → 처, 夫 → 부, 子 → 자.",
+      "날짜의 ja 는 원문 연호 그대로(예: 令和７年９月６日), ko 는 서기로(예: 2025년 9월 6일).",
+    ],
+  },
+  sections: () => MARRIAGE_SECTIONS,
+  fileName: (doc) =>
+    `수리증명서_번역_${doc.value(K.issueNumber) || doc.id.slice(0, 8)}`,
+};

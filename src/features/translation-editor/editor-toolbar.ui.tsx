@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { routePaths } from "@/shared/lib/react-router";
 import { Button } from "@/shared/ui";
-import { SHEET_LABELS, useCertificateStore } from "@/entities/certificate";
+import { useCertificateStore } from "@/entities/certificate";
 
 type EditorToolbarProps = {
   /** 주요 동작 (내보내기 등). 데스크톱은 상단 오른쪽, 모바일은 하단 고정 바 */
@@ -11,9 +11,9 @@ type EditorToolbarProps = {
 
 export function EditorToolbar({ actions }: EditorToolbarProps) {
   const navigate = useNavigate();
-  const hasDocument = useCertificateStore((s) => s.document !== null);
+  const template = useCertificateStore((s) => s.document?.template);
   const close = useCertificateStore((s) => s.close);
-  if (!hasDocument) return null;
+  if (!template) return null;
 
   const reset = (
     <Button
@@ -31,7 +31,7 @@ export function EditorToolbar({ actions }: EditorToolbarProps) {
     <>
       <header className="border-paper-200 flex items-center gap-3 border-b py-3">
         <h1 className="text-sm font-semibold sm:text-base">
-          {SHEET_LABELS.titleJa} 번역
+          {template.title[template.source]} 번역
         </h1>
         <div className="flex-1" />
         <div className="hidden items-center gap-3 sm:flex">

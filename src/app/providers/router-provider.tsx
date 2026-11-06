@@ -8,6 +8,7 @@ import { ErrorFallback, FallbackLoading } from "@/shared/ui";
 import { editorPageRoute } from "@/pages/editor";
 import { error404PageRoute } from "@/pages/error";
 import { homePageRoute } from "@/pages/home";
+import { uploadPageRoute } from "@/pages/upload";
 
 const browserRouter = createBrowserRouter([
   {
@@ -16,6 +17,7 @@ const browserRouter = createBrowserRouter([
     children: [
       { path: ROUTE_PATHS.ROOT, loader: () => redirect(routePaths.home()) },
       homePageRoute,
+      uploadPageRoute,
       editorPageRoute,
       error404PageRoute,
       { path: "*", loader: () => redirect(routePaths.errorPage404()) },

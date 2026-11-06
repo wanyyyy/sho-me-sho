@@ -1,4 +1,8 @@
-import type { ExtractionResult } from "../../src/entities/certificate/certificate.types.ts";
+import type {
+  DocumentType,
+  ExtractionResult,
+} from "../../src/entities/certificate/certificate.types.ts";
+import type { DocumentTemplate } from "../../src/shared/lib/template/template.types.ts";
 import { geminiEngineFromEnv } from "./engines/gemini.ts";
 import { sampleEngine } from "./engines/sample.ts";
 
@@ -23,7 +27,11 @@ export type EngineOutput = {
 /** 서버 쪽 읽기·번역 엔진. 모델을 추가하면 이 인터페이스로 하나 더 만들어 ENGINES 에 등록한다 */
 export interface ServerExtractor {
   readonly name: string;
-  extract(image: ImageInput): Promise<EngineOutput>;
+  /** images 는 쪽 순서. 템플릿이 칸 목록·번역 방향·지시 규칙을 정한다 */
+  extract(
+    images: ImageInput[],
+    template: DocumentTemplate<DocumentType>,
+  ): Promise<EngineOutput>;
 }
 
 /** 이름 → 엔진 팩토리. 환경변수(API 키 등)는 선택할 때 읽는다 */

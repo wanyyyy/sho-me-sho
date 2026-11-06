@@ -1,14 +1,24 @@
-import { toKoreanDate } from "@/shared/lib/date-jp";
+import { toJapaneseDate, toKoreanDate } from "@/shared/lib/date-jp";
+import {
+  documentKeys,
+  type ExtractedField,
+  fieldOf,
+  type TemplateField,
+} from "@/shared/lib/template";
 import {
   CertificateDocument,
+  CertificateTemplate,
   ExtractionResult,
-  TemplateField,
 } from "./certificate.types";
-import { MARRIAGE_FIELD_MAP } from "./marriage.template";
 
-/** 화면에 보이는 값 = 사용자 수정값 ?? 모델 번역값 */
+/** 화면에 보이는 값 = 사용자 수정값 ?? 모델 번역값 (번역 언어는 템플릿이 정한다) */
 export function fieldValue(doc: CertificateDocument, key: string): string {
-  return doc.edits[key] ?? doc.extracted[key]?.ko ?? "";
+  return doc.edits[key] ?? doc.extracted[key]?.[doc.template.target] ?? "";
+}
+
+/** 모델이 읽은 원문 (툴팁·대조용) */
+export function sourceValue(doc: CertificateDocument, key: string): string {
+  return doc.extracted[key]?.[doc.template.source] ?? "";
 }
 
 export type FieldStatus = "edited" | "review" | "ok" | "missing";
@@ -36,12 +46,16 @@ export function fieldStatus(
   return "ok";
 }
 
-/** 모든 칸의 상태를 한 번에 (렌더마다 칸별로 다시 계산하지 않도록) */
+/** 문서의 모든 칸(고정 + 가변 행) 상태를 한 번에 (렌더마다 칸별로 다시 계산하지 않도록) */
 export function fieldStatuses(
   doc: CertificateDocument,
-  fields: TemplateField[],
 ): Record<string, FieldStatus> {
-  return Object.fromEntries(fields.map((f) => [f.key, fieldStatus(doc, f)]));
+  return Object.fromEntries(
+    documentKeys(doc.template, doc).map((key) => [
+      key,
+      fieldStatus(doc, fieldOf(doc.template, key)),
+    ]),
+  );
 }
 
 /** 상태별 칸 수 (편집 화면 범례용) */
@@ -58,18 +72,28 @@ export function countStatuses(
   return counts;
 }
 
-/**
- * 엔진 출력 후처리. 어떤 Extractor 구현이든 거친다:
- * date 칸은 원문 연호를 서기로 다시 계산해 모델 번역보다 우선한다
- */
+/** date 칸의 번역을 원문에서 다시 계산한다 (연호→서기, 년월일→年月日). 모델 번역보다 우선 */
+function normalizeDate(
+  field: ExtractedField,
+  target: "ja" | "ko",
+): ExtractedField {
+  if (target === "ko" && field.ja)
+    return { ...field, ko: toKoreanDate(field.ja) };
+  if (target === "ja" && field.ko)
+    return { ...field, ja: toJapaneseDate(field.ko) };
+  return field;
+}
+
+/** 엔진 출력 후처리. 어떤 Extractor 구현이든 거친다 */
 export function normalizeExtraction(
   result: ExtractionResult,
+  template: CertificateTemplate,
 ): ExtractionResult {
   const fields = Object.fromEntries(
     Object.entries(result.fields).map(([key, f]) => [
       key,
-      MARRIAGE_FIELD_MAP[key]?.kind === "date" && f.ja
-        ? { ...f, ko: toKoreanDate(f.ja) }
+      fieldOf(template, key).kind === "date"
+        ? normalizeDate(f, template.target)
         : f,
     ]),
   );

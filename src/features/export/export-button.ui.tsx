@@ -1,22 +1,27 @@
-import { useState } from "react";
-import { Button, PrintPreviewDialog } from "@/shared/ui";
+import { type ComponentType, useState } from "react";
+import { Button, PrintPreviewDialog, type SheetProps } from "@/shared/ui";
 import {
-  CertificateSheet,
-  FIELD_KEYS,
+  CertificateDocument,
   fieldValue,
   TranslatorBlock,
   useCertificateDocument,
   useTranslatorInfo,
 } from "@/entities/certificate";
 
+type ExportButtonProps = {
+  /** 문서 종류에 맞는 양식 시트 (widgets/documents 가 고른다) */
+  Sheet: ComponentType<SheetProps<CertificateDocument>>;
+};
+
 /** 인쇄 미리보기를 열고, 브라우저 인쇄창에서 PDF 로 저장하게 한다 */
-export function ExportButton() {
+export function ExportButton({ Sheet }: ExportButtonProps) {
   const doc = useCertificateDocument();
   const translator = useTranslatorInfo();
   const [open, setOpen] = useState(false);
   if (!doc) return null;
 
-  const title = `수리증명서_번역_${fieldValue(doc, FIELD_KEYS.issueNumber) || doc.id.slice(0, 8)}`;
+  const { template } = doc;
+  const value = (key: string) => fieldValue(doc, key);
 
   return (
     <>
@@ -26,17 +31,18 @@ export function ExportButton() {
         <PrintPreviewDialog
           open
           onClose={() => setOpen(false)}
-          documentTitle={title}
-          orientation="landscape"
+          documentTitle={template.fileName({ id: doc.id, value })}
+          orientation={template.orientation}
         >
-          <CertificateSheet
+          <Sheet
             doc={doc}
             cell={(field) => (
-              <span className="whitespace-pre-wrap">
-                {fieldValue(doc, field.key)}
-              </span>
+              <span className="whitespace-pre-wrap">{value(field.key)}</span>
             )}
-            footer={<TranslatorBlock info={translator} />}
+            value={value}
+            footer={
+              <TranslatorBlock info={translator} lang={template.target} />
+            }
           />
         </PrintPreviewDialog>
       )}

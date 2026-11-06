@@ -1,3 +1,10 @@
+import { fieldOf } from "@/shared/lib/template";
+import { BASIC_TEMPLATE } from "@/features/basic";
+import {
+  MARRIAGE_KEYS as K,
+  MARRIAGE_SAMPLE,
+  MARRIAGE_TEMPLATE,
+} from "@/features/marriage";
 import {
   countStatuses,
   fieldStatus,
@@ -5,18 +12,16 @@ import {
   fieldValue,
   normalizeExtraction,
 } from "./certificate.lib";
-import { SAMPLE_EXTRACTION } from "./certificate.mock";
 import { CertificateDocument } from "./certificate.types";
-import { K, MARRIAGE_FIELD_MAP, MARRIAGE_FIELDS } from "./marriage.template";
 
 const doc: CertificateDocument = {
   id: "t",
-  documentType: "marriage",
-  source: { name: "a.jpg", previewUrl: "blob:x" },
-  extracted: SAMPLE_EXTRACTION.fields,
+  template: MARRIAGE_TEMPLATE,
+  source: { name: "a.jpg", previewUrls: ["blob:x"] },
+  extracted: MARRIAGE_SAMPLE.fields,
   edits: { [K.personRegistry(0)]: "수정한 본적" },
 };
-const field = (key: string) => MARRIAGE_FIELD_MAP[key];
+const field = (key: string) => fieldOf(MARRIAGE_TEMPLATE, key);
 
 describe("certificate.lib", () => {
   it("수정값이 있으면 수정값, 없으면 모델 번역값", () => {
@@ -39,26 +44,58 @@ describe("certificate.lib", () => {
   });
 
   it("상태별 칸 수를 센다", () => {
-    const counts = countStatuses(fieldStatuses(doc, MARRIAGE_FIELDS));
+    const counts = countStatuses(fieldStatuses(doc));
     expect(counts.edited).toBe(1);
     expect(counts.edited + counts.review + counts.ok + counts.missing).toBe(
-      MARRIAGE_FIELDS.length,
+      MARRIAGE_TEMPLATE.fields.length,
     );
   });
 
   it("normalizeExtraction 은 date 칸의 번역을 원문 연호에서 다시 계산한다", () => {
-    const result = normalizeExtraction({
-      documentType: "marriage",
-      fields: {
-        [K.issuedAt]: {
-          ja: "令和８年１０月６日",
-          ko: "틀린 값",
-          confidence: "high",
+    const result = normalizeExtraction(
+      {
+        documentType: "marriage",
+        fields: {
+          [K.issuedAt]: {
+            ja: "令和８年１０月６日",
+            ko: "틀린 값",
+            confidence: "high",
+          },
+          [K.issuerName]: { ja: "上甲 誠", ko: "그대로", confidence: "high" },
         },
-        [K.issuerName]: { ja: "上甲 誠", ko: "그대로", confidence: "high" },
       },
-    });
+      MARRIAGE_TEMPLATE,
+    );
     expect(result.fields[K.issuedAt].ko).toBe("2026년 10월 6일");
     expect(result.fields[K.issuerName].ko).toBe("그대로");
+  });
+
+  it("normalizeExtraction 은 번역 언어가 일본어면 년월일 → 年月日 로 바꾼다", () => {
+    const result = normalizeExtraction(
+      {
+        documentType: "basic",
+        fields: {
+          "person.birthDate": {
+            ko: "1992년 02월 20일",
+            ja: "틀린 값",
+            confidence: "high",
+          },
+          "history.0.value": {
+            ko: "2008년 01월 01일",
+            ja: "틀린 값",
+            confidence: "high",
+          },
+          "person.name": {
+            ko: "김대완",
+            ja: "キム・デワン",
+            confidence: "high",
+          },
+        },
+      },
+      BASIC_TEMPLATE,
+    );
+    expect(result.fields["person.birthDate"].ja).toBe("1992年 02月 20日");
+    expect(result.fields["history.0.value"].ja).toBe("틀린 값"); // 가변 행 내용은 text
+    expect(result.fields["person.name"].ja).toBe("キム・デワン");
   });
 });

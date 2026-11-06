@@ -1,9 +1,9 @@
+import { fieldOf } from "@/shared/lib/template";
 import {
   CertificateDocument,
   FieldStatus,
   fieldValue,
-  MARRIAGE_FIELD_MAP,
-  MARRIAGE_SECTIONS,
+  sourceValue,
 } from "@/entities/certificate";
 import { EditableCell } from "./editable-cell.ui";
 import { StatusChip } from "./status-chip.ui";
@@ -16,17 +16,19 @@ type FieldListProps = {
 
 /** 좁은 화면용: 표 대신 묶음별 세로 목록. 칸마다 라벨·입력·원문·상태 */
 export function FieldList({ doc, statuses, onChange }: FieldListProps) {
+  const { template } = doc;
   return (
     <div className="flex flex-col gap-9">
-      {MARRIAGE_SECTIONS.map((section) => (
+      {template.sections(doc).map((section) => (
         <section key={section.title} aria-label={section.title}>
           <h3 className="text-ink-900 border-ink-900 mb-3 border-b-2 pb-1.5 text-base font-semibold tracking-wide">
             {section.title}
           </h3>
           <div className="flex flex-col gap-4">
             {section.keys.map((key) => {
-              const field = MARRIAGE_FIELD_MAP[key];
-              const source = doc.extracted[key]?.ja;
+              const field = fieldOf(template, key);
+              const source = sourceValue(doc, key);
+              const status = statuses[key] ?? "missing";
               return (
                 <div key={key} className="flex flex-col gap-1">
                   <div className="flex items-center justify-between gap-2">
@@ -36,13 +38,13 @@ export function FieldList({ doc, statuses, onChange }: FieldListProps) {
                         {field.labelJa}
                       </span>
                     </span>
-                    <StatusChip status={statuses[key]} />
+                    <StatusChip status={status} />
                   </div>
                   <EditableCell
                     field={field}
                     value={fieldValue(doc, key)}
                     source={source}
-                    status={statuses[key]}
+                    status={status}
                     onChange={onChange}
                     className="h-11 text-base"
                   />

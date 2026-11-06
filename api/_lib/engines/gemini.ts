@@ -1,7 +1,12 @@
 import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { ExtractionResultSchema } from "../../../src/entities/certificate/certificate.contracts.ts";
+import type { DocumentTemplate } from "../../../src/shared/lib/template/template.types.ts";
 import type { EngineOutput, ImageInput, ServerExtractor } from "../engine.ts";
-import { buildPrompt, buildResponseSchema } from "./gemini.prompt.ts";
+import {
+  buildPrompt,
+  buildResponseSchema,
+  flattenResponse,
+} from "./gemini.prompt.ts";
 
 export const DEFAULT_GEMINI_MODEL = "gemini-3.8-flash";
 /** Vercel 함수 60초 안에 끝나도록 모델 호출은 그보다 짧게 끊는다 */
@@ -34,24 +39,30 @@ export function createGeminiEngine({
   model = DEFAULT_GEMINI_MODEL,
   client = new GoogleGenAI({ apiKey }),
 }: GeminiOptions): ServerExtractor {
-  const prompt = buildPrompt();
-  const responseJsonSchema = buildResponseSchema();
-
   return {
     name: `gemini:${model}`,
-    async extract(image: ImageInput): Promise<EngineOutput> {
+    async extract(
+      images: ImageInput[],
+      template: DocumentTemplate,
+    ): Promise<EngineOutput> {
+      const prompt = buildPrompt(template);
+      const responseJsonSchema = buildResponseSchema(template);
       const response = await client.models.generateContent({
         model,
         contents: [
           {
             role: "user",
             parts: [
-              {
-                inlineData: {
-                  mimeType: image.mimeType,
-                  data: Buffer.from(image.bytes).toString("base64"),
+              // 쪽마다 "N쪽" 표시 + 이미지. 지시문은 맨 뒤
+              ...images.flatMap((image, i) => [
+                { text: `${i + 1}쪽:` },
+                {
+                  inlineData: {
+                    mimeType: image.mimeType,
+                    data: Buffer.from(image.bytes).toString("base64"),
+                  },
                 },
-              },
+              ]),
               { text: prompt },
             ],
           },
@@ -68,7 +79,9 @@ export function createGeminiEngine({
       if (!text) throw new Error("모델이 빈 응답을 돌려줬습니다");
       const usage = response.usageMetadata;
       return {
-        result: ExtractionResultSchema.parse(JSON.parse(text)),
+        result: ExtractionResultSchema.parse(
+          flattenResponse(template, JSON.parse(text)),
+        ),
         usage: {
           inputTokens: usage?.promptTokenCount,
           outputTokens:

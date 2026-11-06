@@ -1,15 +1,19 @@
 import { ExtractionResultSchema } from "../../src/entities/certificate/certificate.contracts.ts";
+import { DocumentTypeSchema } from "../../src/entities/certificate/certificate.contracts.ts";
+import { templateOf } from "./documents.ts";
 import { selectEngine } from "./engine.ts";
 
 describe("selectEngine", () => {
-  it("sample 엔진은 계약에 맞는 결과를 돌려준다", async () => {
+  it("sample 엔진은 서류 종류마다 계약에 맞는 결과를 돌려준다", async () => {
     const engine = selectEngine("sample");
-    const { result } = await engine.extract({
-      bytes: new Uint8Array(),
-      mimeType: "image/jpeg",
-      name: "a.jpg",
-    });
-    expect(ExtractionResultSchema.safeParse(result).success).toBe(true);
+    for (const type of DocumentTypeSchema.options) {
+      const { result } = await engine.extract(
+        [{ bytes: new Uint8Array(), mimeType: "image/jpeg", name: "a.jpg" }],
+        templateOf(type),
+      );
+      expect(ExtractionResultSchema.safeParse(result).success).toBe(true);
+      expect(result.documentType).toBe(type);
+    }
   });
 
   it("모르는 이름이면 바로 실패한다", () => {

@@ -1,16 +1,26 @@
 import { useNavigate } from "react-router-dom";
 import { routePaths } from "@/shared/lib/react-router";
 import { Button } from "@/shared/ui";
+import { CertificateTemplate, ExtractionResult } from "@/entities/certificate";
 import { type ExtractInput, useExtractCertificate } from "./extract.mutation";
 import { UploadDropzone } from "./upload-dropzone.ui";
 
-/** 홈: 업로드 → 읽기·번역 → 편집 화면으로 이동 */
-export function UploadSection() {
+type UploadSectionProps = {
+  template: CertificateTemplate;
+  /** "샘플로 체험하기" 가 여는 결과 */
+  sample: ExtractionResult;
+};
+
+/** 업로드 → 읽기·번역 → 편집 화면으로 이동 */
+export function UploadSection({ template, sample }: UploadSectionProps) {
   const navigate = useNavigate();
   const { mutate, isPending, isError, error } = useExtractCertificate();
 
-  const run = (input: ExtractInput) =>
-    mutate(input, { onSuccess: () => navigate(routePaths.editor()) });
+  const run = (files: ExtractInput["files"]) =>
+    mutate(
+      { template, sample, files },
+      { onSuccess: () => navigate(routePaths.editor()) },
+    );
 
   return (
     <section className="flex flex-col gap-4">

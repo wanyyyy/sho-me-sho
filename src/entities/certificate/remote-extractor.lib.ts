@@ -1,6 +1,6 @@
 import { accessCodeHeader } from "@/shared/lib/access-code";
 import { ExtractionResultSchema } from "./certificate.contracts";
-import { Extractor } from "./certificate.types";
+import { DocumentType, Extractor } from "./certificate.types";
 
 export const EXTRACT_ENDPOINT = "/api/extract";
 
@@ -20,9 +20,10 @@ function errorMessage(data: unknown, status: number): string {
 
 /** 서버 함수(/api/extract)에 이미지를 보내고 계약(ExtractionResultSchema)대로 검증해 받는다 */
 export const remoteExtractor: Extractor = {
-  async extract(file: File) {
+  async extract(files: File[], documentType: DocumentType) {
     const body = new FormData();
-    body.append("file", file, file.name);
+    for (const file of files) body.append("file", file, file.name);
+    body.append("documentType", documentType);
     const response = await fetch(EXTRACT_ENDPOINT, {
       method: "POST",
       headers: { "x-access-code": accessCodeHeader() },

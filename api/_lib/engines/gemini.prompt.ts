@@ -1,37 +1,45 @@
-import {
-  ConfidenceSchema,
-  DocumentTypeSchema,
-} from "../../../src/entities/certificate/certificate.contracts.ts";
-import { MARRIAGE_FIELDS } from "../../../src/entities/certificate/marriage.template.ts";
+import { ConfidenceSchema } from "../../../src/entities/certificate/certificate.contracts.ts";
+import { repeatKey } from "../../../src/shared/lib/template/template.lib.ts";
+import type {
+  DocumentTemplate,
+  Lang,
+} from "../../../src/shared/lib/template/template.types.ts";
+
+const LANG_NAME: Record<Lang, string> = { ja: "일본어", ko: "한국어" };
 
 const KIND_NOTE: Record<string, string> = {
-  date: "날짜. ja 는 원문 연호 그대로(예: 令和７年９月６日), ko 는 서기로(예: 2025년 9월 6일)",
-  name: "인명. ko 는 한글 표기(일본인은 일본어 발음, 한국인은 한국 이름)",
-  number: "번호. ja·ko 모두 반각 숫자로",
+  date: "날짜",
+  name: "인명",
+  number: "번호. 반각 숫자로",
   text: "",
 };
 
-/** 양식 선언(MARRIAGE_FIELDS)에서 만든 지시문. 칸을 추가하면 여기도 자동으로 따라온다 */
-export function buildPrompt(): string {
-  const lines = MARRIAGE_FIELDS.map((f) => {
+/** 템플릿 선언에서 만든 지시문. 칸·규칙을 추가하면 여기도 자동으로 따라온다 */
+export function buildPrompt(template: DocumentTemplate): string {
+  const { source, target } = template;
+  const fieldLines = template.fields.map((f) => {
     const note = KIND_NOTE[f.kind];
     return `- ${f.key}: ${f.labelJa} (${f.labelKo})${note ? ` — ${note}` : ""}`;
   });
+  const repeatLines = template.repeats.flatMap((g) => [
+    `- 배열 ${g.key}: ${g.labelJa} (${g.labelKo}). 행마다 객체 하나, 행 수는 서류에 있는 만큼:`,
+    ...g.fields.map((f) => `    - ${f.sub}: ${f.labelJa} (${f.labelKo})`),
+  ]);
   return [
-    "이 이미지는 일본 관공서가 발행한 수리증명서(受理証明書)다. 표의 각 칸을 읽어 아래 키에 맞춰 JSON 으로 채워라.",
+    template.prompt.intro,
     "",
     "규칙:",
-    "- ja: 칸의 원문을 그대로 (한자·가나·전각 숫자 유지, 줄바꿈은 공백 하나로).",
-    "- ko: ja 의 자연스러운 한국어 번역. 지명·주소는 한글 음역(예: 東京都新宿区 → 도쿄도 신주쿠구).",
-    '- 원본에서 비공개 처리된 칸(＊ 또는 검게 가려짐)은 ja·ko 모두 "＊＊＊＊＊".',
-    "- 비어 있는 칸은 ja·ko 모두 빈 문자열.",
+    `- ${source}: 칸의 ${LANG_NAME[source]} 원문을 그대로 (줄바꿈은 공백 하나로).`,
+    `- ${target}: ${source} 의 ${LANG_NAME[target]} 번역.`,
+    "- 이미지가 여러 장이면 서류의 1쪽, 2쪽 … 순서다.",
     "- confidence: high = 또렷이 읽힘, medium = 일부 글자가 불확실, low = 흐리거나 추정. 손글씨·도장 위 글자는 보수적으로.",
-    "- 사건본인 행은 위에서부터 1~4. 없는 행은 빈 문자열로 둔다.",
-    "- 続柄(관계)의 ko 는 양식 관례대로 妻 → 처, 夫 → 부, 子 → 자.",
-    `- documentType 은 "${DocumentTypeSchema.options[0]}".`,
+    `- 비어 있는 칸은 ja·ko 모두 빈 문자열.`,
+    ...template.prompt.rules.map((r) => `- ${r}`),
+    `- documentType 은 "${template.type}".`,
     "",
     "채울 키:",
-    ...lines,
+    ...fieldLines,
+    ...(repeatLines.length ? ["", "가변 행:", ...repeatLines] : []),
   ].join("\n");
 }
 
@@ -45,19 +53,64 @@ const FIELD_SCHEMA = {
   required: ["ja", "ko", "confidence"],
 } as const;
 
-/** 모델 응답을 강제하는 JSON 스키마. 모든 키를 required 로 두어 빠뜨리지 못하게 한다 */
-export function buildResponseSchema() {
-  const keys = MARRIAGE_FIELDS.map((f) => f.key);
+/**
+ * 모델 응답을 강제하는 JSON 스키마. 고정 칸은 모두 required, 가변 행 그룹은 배열.
+ * 응답 모양: { documentType, fields: {...고정}, [group]: [{sub: FIELD}...] }
+ */
+export function buildResponseSchema(template: DocumentTemplate) {
+  const keys = template.fields.map((f) => f.key);
+  const groups = Object.fromEntries(
+    template.repeats.map((g) => [
+      g.key,
+      {
+        type: "array",
+        items: {
+          type: "object",
+          properties: Object.fromEntries(
+            g.fields.map((f) => [f.sub, FIELD_SCHEMA]),
+          ),
+          required: g.fields.map((f) => f.sub),
+        },
+      },
+    ]),
+  );
   return {
     type: "object",
     properties: {
-      documentType: { type: "string", enum: DocumentTypeSchema.options },
+      documentType: { type: "string", enum: [template.type] },
       fields: {
         type: "object",
         properties: Object.fromEntries(keys.map((k) => [k, FIELD_SCHEMA])),
         required: keys,
       },
+      ...groups,
     },
-    required: ["documentType", "fields"],
+    required: ["documentType", "fields", ...template.repeats.map((g) => g.key)],
   };
+}
+
+type RawField = { ja?: unknown; ko?: unknown; confidence?: unknown };
+
+/** 모델의 중첩 응답(배열) → 계약의 평면 키 (`group.0.sub`). 검증은 호출 쪽에서 zod 로 */
+export function flattenResponse(
+  template: DocumentTemplate,
+  raw: unknown,
+): unknown {
+  if (typeof raw !== "object" || raw === null) return raw;
+  const data = raw as Record<string, unknown>;
+  const fields: Record<string, unknown> = {
+    ...(typeof data.fields === "object" && data.fields ? data.fields : {}),
+  };
+  for (const group of template.repeats) {
+    const rows = Array.isArray(data[group.key]) ? data[group.key] : [];
+    (rows as RawField[]).forEach((row, i) => {
+      if (typeof row !== "object" || row === null) return;
+      for (const f of group.fields) {
+        fields[repeatKey(group.key, i, f.sub)] = (
+          row as Record<string, unknown>
+        )[f.sub];
+      }
+    });
+  }
+  return { documentType: template.type, fields };
 }

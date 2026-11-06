@@ -1,10 +1,7 @@
+import type { TemplateField } from "@/shared/lib/template";
 import { cn } from "@/shared/lib/utils";
-import {
-  FIELD_STATUS_LABELS,
-  FieldStatus,
-  sheetInputClassName,
-  TemplateField,
-} from "@/entities/certificate";
+import { sheetInputClassName } from "@/shared/ui";
+import { FIELD_STATUS_LABELS, FieldStatus } from "@/entities/certificate";
 import { STATUS_TONE_CLASS } from "./status-chip.ui";
 
 type EditableCellProps = {

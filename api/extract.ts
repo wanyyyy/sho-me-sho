@@ -50,10 +50,10 @@ export async function POST(request: Request): Promise<Response> {
         "오늘 사용할 수 있는 횟수를 넘었습니다. 내일 다시 시도해 주세요.",
       );
     }
-    const image = await readUpload(request);
+    const { images, template } = await readUpload(request);
     const engine = selectEngine();
     engineName = engine.name;
-    const output = await engine.extract(image);
+    const output = await engine.extract(images, template);
     usage = output.usage;
     return json(output.result);
   } catch (error) {

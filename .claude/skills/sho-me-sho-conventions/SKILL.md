@@ -18,14 +18,14 @@ description: >
 - 슬라이스 내부 참조는 상대경로(`./foo.lib`).
 - import 순서: 외부 패키지 → `@/shared` → `@/entities` → `@/features` → `@/widgets` → `@/pages` → 상대경로. CSS import는 맨 마지막.
 
-| 레이어     | 역할                                                      |
-| ---------- | --------------------------------------------------------- |
-| `app`      | 진입점, providers(router, react-query), 글로벌 CSS        |
-| `pages`    | 라우트 단위 조합자. UI 로직을 직접 구현하지 않는다        |
-| `widgets`  | 여러 feature를 조합하는 블록이 필요할 때만                |
-| `features` | 화면 섹션/기능 단위 슬라이스 (예: upload, ocr, translate) |
-| `entities` | 도메인 모델, 계약, queryOptions, repository, 순수 변환    |
-| `shared`   | lib(react-query, react-router, utils, test), ui(+layout)  |
+| 레이어     | 역할                                                                                                                                  |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `app`      | 진입점, providers(router, react-query), 글로벌 CSS                                                                                    |
+| `pages`    | 라우트 단위 조합자. UI 로직을 직접 구현하지 않는다                                                                                    |
+| `widgets`  | 여러 feature를 조합하는 블록 (예: documents = 서류 feature 등록표 + 메뉴)                                                             |
+| `features` | 메뉴(주소)별 ui + model (예: marriage, basic) 과 화면 섹션 (upload, translation-editor, export). feature 끼리 모르므로 조합은 widgets |
+| `entities` | 도메인 모델, 계약, 스토어, 순수 변환 (서류 종류를 모른다)                                                                             |
+| `shared`   | lib(react-query, react-router, utils, test), ui(+layout)                                                                              |
 
 ## 파일 네이밍
 

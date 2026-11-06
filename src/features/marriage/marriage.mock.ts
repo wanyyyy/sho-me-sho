@@ -1,19 +1,16 @@
-import type { ExtractionResult } from "./certificate.types.ts";
-import { K } from "./marriage.template.ts";
+import { sampleField, type TemplateSample } from "@/shared/lib/template";
+import { K } from "./marriage.model";
 
-const hi = (ja: string, ko: string) =>
-  ({ ja, ko, confidence: "high" }) as const;
-const mid = (ja: string, ko: string) =>
-  ({ ja, ko, confidence: "medium" }) as const;
-const low = (ja: string, ko: string) =>
-  ({ ja, ko, confidence: "low" }) as const;
+const hi = sampleField("high");
+const mid = sampleField("medium");
+const low = sampleField("low");
 const masked = () => hi("＊＊＊＊＊", "＊＊＊＊＊");
 
 /**
  * 실제 모델 연동 전 개발용 샘플. 실제 증명서의 표 구조를 따르되 인물·주소는 모두 가상이다.
  * (원본처럼 비공개 처리된 행은 ＊＊＊＊＊ 로 둔다)
  */
-export const SAMPLE_EXTRACTION: ExtractionResult = {
+export const MARRIAGE_SAMPLE: TemplateSample<"marriage"> = {
   documentType: "marriage",
   fields: {
     [K.notificationType]: hi("婚姻届", "혼인신고"),
