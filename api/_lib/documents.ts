@@ -7,6 +7,8 @@ import { BASIC_SAMPLE } from "../../src/features/basic/basic.mock.ts";
 import { BASIC_TEMPLATE } from "../../src/features/basic/basic.model.ts";
 import { FAMILY_SAMPLE } from "../../src/features/family/family.mock.ts";
 import { FAMILY_TEMPLATE } from "../../src/features/family/family.model.ts";
+import { MARITAL_SAMPLE } from "../../src/features/marital/marital.mock.ts";
+import { MARITAL_TEMPLATE } from "../../src/features/marital/marital.model.ts";
 import { MARRIAGE_SAMPLE } from "../../src/features/marriage/marriage.mock.ts";
 import { MARRIAGE_TEMPLATE } from "../../src/features/marriage/marriage.model.ts";
 import type { DocumentTemplate } from "../../src/shared/lib/template/template.types.ts";
@@ -19,12 +21,14 @@ export const TEMPLATES: Record<DocumentType, DocumentTemplate<DocumentType>> = {
   marriage: MARRIAGE_TEMPLATE,
   basic: BASIC_TEMPLATE,
   family: FAMILY_TEMPLATE,
+  marital: MARITAL_TEMPLATE,
 };
 
 export const SAMPLES: Record<DocumentType, ExtractionResult> = {
   marriage: MARRIAGE_SAMPLE,
   basic: BASIC_SAMPLE,
   family: FAMILY_SAMPLE,
+  marital: MARITAL_SAMPLE,
 };
 
 export const templateOf = (type: DocumentType) => TEMPLATES[type];

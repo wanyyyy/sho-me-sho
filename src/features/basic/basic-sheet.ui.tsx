@@ -1,13 +1,9 @@
 import type { ReactNode } from "react";
-import {
-  fieldOf,
-  type RepeatGroup,
-  repeatKey,
-  repeatRows,
-  type TemplateDocument,
-} from "@/shared/lib/template";
+import { fieldOf } from "@/shared/lib/template";
 import { cn } from "@/shared/lib/utils";
 import {
+  DetailTable,
+  PersonTable,
   SealMark,
   sheetCellClass,
   sheetFrameClassName,
@@ -22,82 +18,6 @@ import {
 
 const { head, body } = sheetCellClass;
 type Cell = (key: string) => ReactNode;
-type Value = (key: string) => string;
-
-/** 같은 구분이 이어지는 행을 묶는다. 묶음의 첫 행에만 rowSpan, 나머지는 0 */
-function categorySpans(value: Value, group: RepeatGroup, rows: number[]) {
-  const spans: number[] = [];
-  let start = 0;
-  rows.forEach((i, idx) => {
-    const same =
-      idx > 0 &&
-      value(repeatKey(group.key, i, "category")) ===
-        value(repeatKey(group.key, rows[idx - 1], "category"));
-    if (same) {
-      spans[start] += 1;
-      spans.push(0);
-    } else {
-      start = idx;
-      spans.push(1);
-    }
-  });
-  return spans;
-}
-
-/** [区分 | 詳細内容] 표. 대괄호 줄 하나가 행 하나, 구분은 묶어서 표시 */
-function DetailTable({
-  doc,
-  group,
-  cell,
-  value,
-}: {
-  doc: TemplateDocument;
-  group: RepeatGroup;
-  cell: Cell;
-  value: Value;
-}) {
-  const rows = repeatRows(group, doc);
-  const spans = categorySpans(value, group, rows);
-  return (
-    <table className="mt-3 w-full border-collapse">
-      <thead>
-        <tr>
-          <th className={cn(head, "w-[7rem]")}>{L.category}</th>
-          <th className={head}>{L.detail}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((i, idx) => (
-          <tr key={i}>
-            {spans[idx] > 0 && (
-              <td className={cn(body, "text-center")} rowSpan={spans[idx]}>
-                {cell(repeatKey(group.key, i, "category"))}
-              </td>
-            )}
-            <td className={body}>
-              <div className="flex items-start gap-1">
-                <span>[</span>
-                {/* 인쇄(텍스트)는 내용 폭만큼, 편집(input)만 고정 폭 */}
-                <div className="shrink-0 whitespace-nowrap [&>input]:w-[10rem]">
-                  {cell(repeatKey(group.key, i, "label"))}
-                </div>
-                <span>]</span>
-                <div className="min-w-0 flex-1">
-                  {cell(repeatKey(group.key, i, "value"))}
-                </div>
-              </div>
-            </td>
-          </tr>
-        ))}
-        {rows.length === 0 && (
-          <tr>
-            <td className={cn(body, "h-7")} colSpan={2} />
-          </tr>
-        )}
-      </tbody>
-    </table>
-  );
-}
 
 /** 쪽 맨 아래: 発給番号 · 쪽수 · 진위확인 안내 */
 function PageFoot({ n, cell }: { n: number; cell: Cell }) {
@@ -128,6 +48,7 @@ export function BasicSheet({
 }: SheetProps) {
   const cell: Cell = (key) => renderCell(fieldOf(BASIC_TEMPLATE, key));
   const page = "flex min-h-[273mm] flex-col print:min-h-[265mm]";
+  const detailHead = [L.category, L.detail] as const;
 
   return (
     <div className={cn(sheetFrameClassName, className)}>
@@ -145,48 +66,40 @@ export function BasicSheet({
         </table>
 
         <DetailTable
+          className="mt-3"
           doc={doc}
           group={BASIC_REPEATS.history}
+          headings={detailHead}
           cell={cell}
           value={value}
         />
 
-        <table className="mt-3 w-full border-collapse">
-          <thead>
-            <tr>
-              {L.personHead.map((h) => (
-                <th key={h} className={head}>
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className={cn(body, "w-[3rem] text-center")}>{L.self}</td>
-              <td className={cn(body, "w-[11rem]")}>{cell(BK.personName)}</td>
-              <td className={cn(body, "w-[8.5rem]")}>
-                {cell(BK.personBirthDate)}
-              </td>
-              <td className={cn(body, "w-[8rem]")}>
-                {cell(BK.personResidentNumber)}
-              </td>
-              <td className={cn(body, "w-[3rem] text-center")}>
-                {cell(BK.personGender)}
-              </td>
-              <td className={cn(body, "text-center")}>
-                {cell(BK.personOrigin)}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <PersonTable
+          className="mt-3"
+          headings={L.personHead}
+          cell={cell}
+          rows={[
+            {
+              relation: L.self,
+              keys: [
+                BK.personName,
+                BK.personBirthDate,
+                BK.personResidentNumber,
+                BK.personGender,
+                BK.personOrigin,
+              ],
+            },
+          ]}
+        />
 
         <div className="mt-4 w-fit border border-black px-3 py-1">
           {L.general}
         </div>
         <DetailTable
+          className="mt-3"
           doc={doc}
           group={BASIC_REPEATS.general}
+          headings={detailHead}
           cell={cell}
           value={value}
         />

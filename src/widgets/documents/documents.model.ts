@@ -10,6 +10,11 @@ import {
 import { BASIC_SAMPLE, BASIC_TEMPLATE, BasicSheet } from "@/features/basic";
 import { FAMILY_SAMPLE, FAMILY_TEMPLATE, FamilySheet } from "@/features/family";
 import {
+  MARITAL_SAMPLE,
+  MARITAL_TEMPLATE,
+  MaritalSheet,
+} from "@/features/marital";
+import {
   MARRIAGE_SAMPLE,
   MARRIAGE_TEMPLATE,
   MarriageSheet,
@@ -29,6 +34,11 @@ export const DOCUMENTS: Record<DocumentType, DocumentEntry> = {
     template: FAMILY_TEMPLATE,
     Sheet: FamilySheet,
     sample: FAMILY_SAMPLE,
+  },
+  marital: {
+    template: MARITAL_TEMPLATE,
+    Sheet: MaritalSheet,
+    sample: MARITAL_SAMPLE,
   },
   marriage: {
     template: MARRIAGE_TEMPLATE,

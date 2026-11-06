@@ -1,12 +1,9 @@
 import type { ReactNode } from "react";
-import {
-  fieldOf,
-  repeatKey,
-  repeatRows,
-  type TemplateDocument,
-} from "@/shared/lib/template";
+import { fieldOf, repeatKey, repeatRows } from "@/shared/lib/template";
 import { cn } from "@/shared/lib/utils";
 import {
+  PersonTable,
+  type PersonTableRow,
   SealMark,
   sheetCellClass,
   sheetFrameClassName,
@@ -22,49 +19,8 @@ import {
 const { head, body } = sheetCellClass;
 type Cell = (key: string) => ReactNode;
 
-/** 사람 한 줄: 区分 · 氏名 · 出生年月日 · 住民登録番号 · 性別 · 本籍 */
-type PersonRow = { relation: ReactNode; keys: string[] };
-
-/** [区分 | 氏名 | …] 표. 본인 표와 가족사항 표가 같은 모양 */
-function PersonTable({ rows, cell }: { rows: PersonRow[]; cell: Cell }) {
-  const widths = ["w-[11rem]", "w-[8.5rem]", "w-[8rem]", "w-[3rem]", ""];
-  return (
-    <table className="mt-3 w-full border-collapse">
-      <thead>
-        <tr>
-          {L.personHead.map((h) => (
-            <th key={h} className={head}>
-              {h}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map(({ relation, keys }, idx) => (
-          <tr key={idx}>
-            <td className={cn(body, "w-[3rem] text-center")}>{relation}</td>
-            {keys.map((key, col) => (
-              <td
-                key={key}
-                className={cn(body, widths[col], col >= 3 && "text-center")}
-              >
-                {cell(key)}
-              </td>
-            ))}
-          </tr>
-        ))}
-        {rows.length === 0 && (
-          <tr>
-            <td className={cn(body, "h-7")} colSpan={6} />
-          </tr>
-        )}
-      </tbody>
-    </table>
-  );
-}
-
 /** 가족사항 행들. 구분(父·母…)도 모델이 읽은 값이라 칸으로 */
-function familyRows(doc: TemplateDocument, cell: Cell): PersonRow[] {
+function familyRows(doc: SheetProps["doc"], cell: Cell): PersonTableRow[] {
   const g = FAMILY_REPEAT.key;
   return repeatRows(FAMILY_REPEAT, doc).map((i) => ({
     relation: cell(repeatKey(g, i, "relation")),
@@ -101,6 +57,8 @@ export function FamilySheet({
         </table>
 
         <PersonTable
+          className="mt-3"
+          headings={L.personHead}
           cell={cell}
           rows={[
             {
@@ -119,7 +77,13 @@ export function FamilySheet({
         <div className="mt-4 w-fit border border-black px-3 py-1">
           {L.family}
         </div>
-        <PersonTable cell={cell} rows={familyRows(doc, cell)} />
+        <PersonTable
+          className="mt-3"
+          headings={L.personHead}
+          cell={cell}
+          rows={familyRows(doc, cell)}
+          emptyText={L.empty}
+        />
 
         <p className="mt-6 text-center">{L.statement}</p>
         <div className="mt-4 flex justify-center">
