@@ -172,8 +172,7 @@ export const BASIC_TEMPLATE: DocumentTemplate<"basic"> = {
   source: "ko",
   target: "ja",
   title: { ko: "기본증명서(상세)", ja: "基本証明書(詳細)" },
-  description:
-    "기본증명서(상세) → 시약소 제출용 일본어 양식 (3쪽까지 첨부 가능)",
+  description: "기본증명서(상세) → 시약소 제출용 일본어 양식",
   orientation: "portrait",
   fields: BASIC_FIELDS,
   repeats: [BASIC_REPEATS.history, BASIC_REPEATS.general],

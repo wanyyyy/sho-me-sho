@@ -73,10 +73,11 @@ export function UploadDropzone({ onSelect, loading }: UploadDropzoneProps) {
             <span className="text-ink-600 text-sm">
               또는 클릭해서 파일 선택 · {FORMAT_LABELS} · {MAX_FILE_MB}MB 이하
             </span>
-            <span className="text-ink-400 text-xs">
-              여러 쪽이면 사진을 한 번에 여러 장 고르거나 PDF 로 (최대{" "}
-              {MAX_PAGES}
-              쪽)
+            <span className="text-ink-600 text-sm">
+              여러 쪽이면 사진을 한 번에 여러 장 고르거나 PDF 로{" "}
+              <strong className="text-accent-600 font-semibold">
+                최대 {MAX_PAGES}쪽까지
+              </strong>
             </span>
           </>
         )}
