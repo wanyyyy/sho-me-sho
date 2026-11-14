@@ -6,7 +6,6 @@ export const EXTRACT_ENDPOINT = "/api/extract";
 
 const FALLBACK_MESSAGE: Record<number, string> = {
   401: "접근 코드가 맞지 않습니다. 새로고침 후 다시 입력해 주세요.",
-  429: "오늘 사용할 수 있는 횟수를 넘었습니다.",
 };
 
 function errorMessage(data: unknown, status: number): string {

@@ -14,13 +14,16 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "prepare": "husky",
-    "access:hash": "node scripts/access-hash.mjs"
+    "access:hash": "node scripts/access-hash.mjs",
+    "db:setup": "node --env-file=.env.local scripts/db-setup.mjs"
   },
   "dependencies": {
     "@google/genai": "2.32.0",
+    "@neondatabase/serverless": "1.2.0",
     "@tailwindcss/vite": "4.3.1",
     "@tanstack/react-query": "5.90.11",
     "@tanstack/react-query-devtools": "5.91.1",
+    "@vercel/functions": "3.10.5",
     "clsx": "2.1.1",
     "heic2any": "0.0.4",
     "pdfjs-dist": "6.5.438",

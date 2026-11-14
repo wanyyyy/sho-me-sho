@@ -16,9 +16,8 @@
 - 편집: 원본과 양식을 나란히 놓고 칸 단위로 수정. 신뢰도가 낮거나 인명인 칸은 "확인 필요" 표시. 서류마다 행 수가 다른 표(기본증명서의 상세내용 등)는 모델이 읽은 만큼 행이 생김
 - 출력: 원본 표 구조를 그대로 따른 한국어 양식 + 번역 확인서(번역일·번역자·관계)를 가로 A4 로 인쇄·PDF 저장
 - 모바일: 좁은 화면에서는 표 대신 세로 목록으로 편집, 미리보기는 화면 폭에 맞게 축소
-- 개인정보: 파일과 번역 내용을 서버·브라우저 어디에도 저장하지 않음. 서버에는 IP·시각·사용량만 한 줄 기록
+- 개인정보: 파일과 번역 내용을 서버·브라우저 어디에도 저장하지 않음. 서버에는 IP·시각·서류 종류·사용량만 한 줄 기록 (콘솔 + Neon request_logs)
 - 접근 코드: 해시만 설정해 두면 코드를 아는 사람만 들어올 수 있고, 서버도 같은 코드를 검사 (선택)
-- 비용 방어: IP 당 하루 호출 한도
 
 ## 기술
 
@@ -122,7 +121,7 @@ echo "VITE_ACCESS_CODE_HASH=<출력된 해시>" > .env.local   # gitignore 대�
 
 ## 개인정보
 
-- 올린 이미지는 읽기·번역을 위해 서버 함수를 거치지만 서버나 데이터베이스에 저장하지 않습니다. 서버 로그에는 호출 1건당 `{ at, ip, engine, status, ms, usage }` 한 줄만 남고 이미지·결과·접근 코드는 기록하지 않습니다 (`api/_lib/log.ts`).
+- 올린 이미지는 읽기·번역을 위해 서버 함수를 거치지만 서버나 데이터베이스에 저장하지 않습니다. 서버 로그에는 호출 1건당 `{ at, env, requestId, ip, documentType, pages, bytes, engine, status, ms, usage, error }` 한 줄만 남고 이미지·결과·접근 코드는 기록하지 않습니다 (`api/_lib/log.ts`). `DATABASE_URL` 이 있으면 같은 내용을 Neon Postgres 의 `request_logs` 테이블에도 쌓습니다. `error` 는 500 일 때의 서버 내부 메시지입니다.
 - localStorage · IndexedDB 를 쓰지 않습니다. 탭을 닫거나 새로고침하면 파일·수정 내용·번역자 정보가 모두 사라집니다.
 - 모델을 정하면 "이미지가 어느 AI 서비스로 전송되는지"와 그쪽 데이터 보관 정책을 안내문(`privacy-notice.ui.tsx`)에 추가해야 합니다.
 
@@ -130,12 +129,12 @@ echo "VITE_ACCESS_CODE_HASH=<출력된 해시>" > .env.local   # gitignore 대�
 
 ```
 api/
-  extract.ts        POST /api/extract — 접근 코드 → IP 한도 → 업로드 검사 → 엔진 호출
+  extract.ts        POST /api/extract — 접근 코드 → 업로드 검사 → 엔진 호출 → 로그
   _lib/
     access.ts       접근 코드 해시 비교 (상수 시간)
-    rate-limit.ts   IP 당 하루 한도 (인스턴스 메모리; 정확히 막으려면 같은 인터페이스로 KV 구현)
     http.ts         JSON 응답 · 클라이언트 IP · multipart 업로드 검사 (JPG/PNG/WEBP, 20MB, 최대 3쪽, documentType)
-    log.ts          호출 로그 한 줄 (내용은 남기지 않음)
+    log.ts          호출 로그 한 줄 (내용은 남기지 않음) → 콘솔 + request_logs (응답 뒤 waitUntil)
+    db.ts           DATABASE_URL → Neon 서버리스 클라이언트 (없으면 null)
     documents.ts    서버용 서류 등록표 (템플릿·샘플, 시트 제외)
     engine.ts       ServerExtractor 인터페이스 · EXTRACT_ENGINE 으로 엔진 선택
     engines/
@@ -151,23 +150,37 @@ api/
 ## 배포 (Vercel)
 
 1. Vercel 에서 GitHub 저장소를 import 합니다. Vite 프로젝트로 자동 인식되고 `api/` 는 서버리스 함수로 올라갑니다 (`vercel.json`: SPA rewrite, 함수 60초).
-2. 환경변수를 넣습니다: `VITE_ACCESS_CODE_HASH`(접근 코드 해시, Config 유형), `EXTRACT_ENGINE=gemini`, `GEMINI_API_KEY`(Secret), `DAILY_LIMIT_PER_IP`. 모델을 바꾸려면 `GEMINI_MODEL`.
-3. `git push` 하면 빌드·배포됩니다. 로그는 Vercel 대시보드의 함수 로그에서 봅니다.
+2. 환경변수를 넣습니다: `VITE_ACCESS_CODE_HASH`(접근 코드 해시, Config 유형), `EXTRACT_ENGINE=gemini`, `GEMINI_API_KEY`(Secret). 모델을 바꾸려면 `GEMINI_MODEL`.
+3. `git push` 하면 빌드·배포됩니다. 실시간 로그는 Vercel 대시보드의 함수 로그에서 봅니다.
+
+### 호출 로그 DB (Neon)
+
+Vercel 프로젝트 → Storage 에서 Neon 을 연결하면 `DATABASE_URL` 이 자동으로 들어갑니다 (지역은 함수와 같은 미국 동부 `us-east-1`). 테이블은 `.env.local` 에 같은 주소를 넣고 `pnpm db:setup` 으로 만듭니다 (`db/schema.sql`, 여러 번 실행해도 안전). 조회는 Neon 콘솔의 SQL Editor 에서 합니다.
+
+```sql
+-- 날짜별 호출 수·토큰
+select date(at at time zone 'Asia/Seoul') as day, count(*), sum(input_tokens + output_tokens) as tokens
+from request_logs where env = 'production' group by 1 order by 1 desc;
+
+-- 최근 서버 에러
+select at, document_type, engine, error from request_logs where status = 500 order by at desc limit 20;
+```
 
 ## Scripts
 
-| key           | description                    |
-| ------------- | ------------------------------ |
-| dev           | 로컬 개발 서버 구동            |
-| build         | 타입체크 + 프로젝트 빌드       |
-| preview       | 빌드결과 미리보기              |
-| lint          | ESLint                         |
-| typecheck     | `tsc --noEmit`                 |
-| format        | Prettier                       |
-| test          | Vitest 실행                    |
-| test:ui       | Vitest UI                      |
-| test:coverage | 커버리지 리포트 (`./coverage`) |
-| access:hash   | 접근 코드 → SHA-256 해시       |
+| key           | description                     |
+| ------------- | ------------------------------- |
+| dev           | 로컬 개발 서버 구동             |
+| build         | 타입체크 + 프로젝트 빌드        |
+| preview       | 빌드결과 미리보기               |
+| lint          | ESLint                          |
+| typecheck     | `tsc --noEmit`                  |
+| format        | Prettier                        |
+| test          | Vitest 실행                     |
+| test:ui       | Vitest UI                       |
+| test:coverage | 커버리지 리포트 (`./coverage`)  |
+| access:hash   | 접근 코드 → SHA-256 해시        |
+| db:setup      | 로그 테이블 생성 (`.env.local`) |
 
 ## Architecture — Feature-Sliced Design
 
@@ -206,5 +219,4 @@ src/
 - 여권 양식 추가
 - 가변 행 직접 추가·삭제 (지금은 모델이 읽은 행만 수정 가능)
 - 다른 모델(Claude · GPT)도 같은 `ServerExtractor` 로 붙여 같은 증명서로 비교
-- IP 한도를 KV(Upstash Redis 등)로 옮겨 인스턴스와 무관하게 정확히 세기
 - 모델 제공사 콘솔의 월 지출 상한 설정

@@ -39,11 +39,11 @@ describe("remoteExtractor", () => {
   it("오류 본문이 없으면 상태별 기본 문구", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async () => new Response("", { status: 429 })),
+      vi.fn(async () => new Response("", { status: 401 })),
     );
     await expect(
       remoteExtractor.extract([file, file], "marriage"),
-    ).rejects.toThrow(/횟수/);
+    ).rejects.toThrow(/새로고침/);
   });
 
   it("계약과 다른 응답은 거부한다", async () => {

@@ -12,7 +12,6 @@ import {
   readUpload,
 } from "./_lib/http.ts";
 import { logRequest } from "./_lib/log.ts";
-import { createMemoryRateLimiter, dailyLimit } from "./_lib/rate-limit.ts";
 
 const HEX_64 = /^[0-9a-f]{64}$/;
 
@@ -21,36 +20,36 @@ export async function GET(): Promise<Response> {
   const hash = accessCodeHash();
   return json({
     engine: process.env.EXTRACT_ENGINE ?? DEFAULT_ENGINE,
-    dailyLimit: dailyLimit(),
     gate: hash ? (HEX_64.test(hash) ? "on" : "invalid-hash") : "off",
   });
 }
 
-/** 따뜻한 인스턴스가 살아 있는 동안 유지되는 IP 별 횟수 */
-const limiter = createMemoryRateLimiter(dailyLimit());
-
 /**
  * POST /api/extract — multipart(file) → 읽기·번역 결과 JSON.
- * 순서: 접근 코드 → IP 일일 한도 → 업로드 검사 → 엔진 호출. 본문은 코드가 맞을 때만 읽는다
+ * 순서: 접근 코드 → 업로드 검사 → 엔진 호출. 본문은 코드가 맞을 때만 읽는다
  */
 export async function POST(request: Request): Promise<Response> {
   const started = Date.now();
   const ip = clientIp(request);
+  const requestId = request.headers.get("x-vercel-id") ?? crypto.randomUUID();
   let status = 200;
   let engineName = "-";
   let usage: EngineUsage | undefined;
+  let upload:
+    | { documentType: string; pages: number; bytes: number }
+    | undefined;
+  let errorMessage: string | undefined;
 
   try {
     if (!verifyAccessCode(accessCodeOf(request))) {
       throw new HttpError(401, "접근 코드가 맞지 않습니다.");
     }
-    if (!limiter.hit(ip).allowed) {
-      throw new HttpError(
-        429,
-        "오늘 사용할 수 있는 횟수를 넘었습니다. 내일 다시 시도해 주세요.",
-      );
-    }
     const { images, template } = await readUpload(request);
+    upload = {
+      documentType: template.type,
+      pages: images.length,
+      bytes: images.reduce((sum, image) => sum + image.bytes.byteLength, 0),
+    };
     const engine = selectEngine();
     engineName = engine.name;
     const output = await engine.extract(images, template);
@@ -58,17 +57,23 @@ export async function POST(request: Request): Promise<Response> {
     return json(output.result);
   } catch (error) {
     status = error instanceof HttpError ? error.status : 500;
-    if (status === 500) console.error(error);
+    if (status === 500) {
+      console.error(error);
+      errorMessage = error instanceof Error ? error.message : String(error);
+    }
     const message =
       error instanceof HttpError ? error.message : "읽기에 실패했습니다.";
     return json({ error: message }, status);
   } finally {
     logRequest({
+      requestId,
       ip,
       engine: engineName,
       status,
       ms: Date.now() - started,
+      ...upload,
       usage,
+      error: errorMessage,
     });
   }
 }
