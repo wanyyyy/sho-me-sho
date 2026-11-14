@@ -3,10 +3,11 @@ import { cn } from "@/shared/lib/utils";
 
 export type PrintOrientation = "portrait" | "landscape";
 
-/* 인쇄 시 높이 = 용지 - @page 여백(12mm×2). 살짝 줄여 둘째 장으로 넘치지 않게 */
+/* @page 여백이 0 이라 인쇄 시에도 안쪽 여백 12mm 를 유지한다.
+   높이는 용지보다 살짝 줄여 둘째 장으로 넘치지 않게 */
 const SHEET_CLASS: Record<PrintOrientation, string> = {
-  portrait: "min-h-[297mm] w-[210mm] print:min-h-[271mm]",
-  landscape: "min-h-[210mm] w-[297mm] print:min-h-[184mm]",
+  portrait: "min-h-[297mm] w-[210mm] print:min-h-[295mm]",
+  landscape: "min-h-[210mm] w-[297mm] print:min-h-[208mm]",
 };
 
 type PrintSheetProps = {
@@ -24,7 +25,7 @@ export function PrintSheet({ orientation, ref, children }: PrintSheetProps) {
       className={cn(
         "mx-auto flex flex-col bg-white p-[12mm] text-[11px] text-black shadow-md",
         SHEET_CLASS[orientation],
-        "print:w-auto print:p-0 print:shadow-none",
+        "print:w-auto print:shadow-none",
       )}
     >
       {children}

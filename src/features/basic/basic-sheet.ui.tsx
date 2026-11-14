@@ -119,7 +119,7 @@ export function BasicSheet({
       <section
         className={cn(
           page,
-          "border-ink-400 mt-8 border-t border-dashed pt-8 print:mt-0 print:border-0 print:pt-0",
+          "border-ink-400 mt-8 border-t border-dashed pt-8 print:mt-0 print:border-0 print:pt-[12mm]",
         )}
       >
         <div className="ml-auto flex w-[17rem] flex-col gap-1">
