@@ -2,8 +2,8 @@ import {
   sampleField,
   sampleRow,
   type TemplateSample,
-} from "@/shared/lib/template";
-import { BK } from "./basic.model";
+} from "../../shared/lib/template/index.ts";
+import { BK } from "./basic.model.ts";
 
 const hi = sampleField("high");
 const mid = sampleField("medium");

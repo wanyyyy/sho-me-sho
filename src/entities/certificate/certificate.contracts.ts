@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CONFIDENCES } from "@/shared/lib/template";
+import { CONFIDENCES } from "../../shared/lib/template/index.ts";
 
 export const ConfidenceSchema = z.enum(CONFIDENCES);
 

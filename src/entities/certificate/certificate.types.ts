@@ -1,5 +1,8 @@
 import type { z } from "zod";
-import type { DocumentTemplate, ExtractedField } from "@/shared/lib/template";
+import type {
+  DocumentTemplate,
+  ExtractedField,
+} from "../../shared/lib/template/index.ts";
 import type {
   DocumentTypeSchema,
   ExtractionResultSchema,

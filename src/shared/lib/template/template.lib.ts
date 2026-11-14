@@ -4,7 +4,7 @@ import type {
   RepeatGroup,
   TemplateDocument,
   TemplateField,
-} from "./template.types";
+} from "./template.types.ts";
 
 const REPEAT_KEY_RE = /^([A-Za-z]+)\.(\d+)\.([A-Za-z]+)$/;
 

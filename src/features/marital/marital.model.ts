@@ -5,7 +5,7 @@ import {
   repeatRows,
   type TemplateDocument,
   type TemplateField,
-} from "@/shared/lib/template";
+} from "../../shared/lib/template/index.ts";
 
 /** 혼인관계증명서(상세) 고정 칸 키 */
 export const MK = {

@@ -151,6 +151,41 @@ const apiConfig = defineConfig({
   rules: { "no-restricted-imports": "off" },
 });
 
+/**
+ * apiReachableConfig — api/ 가 가져오는 src 파일. Vercel 함수는 Node ESM 그대로 돌아서
+ * @/ 별칭·확장자 없는 경로를 못 찾고 500 이 난다. 상대 경로 + .ts 만 허용
+ */
+const apiReachableConfig = defineConfig({
+  files: [
+    "src/entities/certificate/certificate.contracts.ts",
+    "src/entities/certificate/certificate.types.ts",
+    "src/features/*/*.model.ts",
+    "src/features/*/*.mock.ts",
+    "src/shared/lib/template/*.ts",
+    "src/shared/lib/file/file-kind.lib.ts",
+  ],
+  ignores: ["**/*.test.ts"],
+  rules: {
+    "no-restricted-imports": [
+      "error",
+      {
+        patterns: [
+          {
+            regex: "^@/",
+            message:
+              "api/ 가 가져오는 파일입니다. Vercel 런타임이 별칭을 못 풀어 500 이 나므로 상대 경로 + .ts 확장자로 import 하세요",
+          },
+          {
+            regex: "^\\.{1,2}/(?!.*\\.ts$)",
+            message:
+              "api/ 가 가져오는 파일입니다. 상대 import 에 .ts 확장자를 붙이세요 (Node ESM)",
+          },
+        ],
+      },
+    ],
+  },
+});
+
 /** vitestConfig */
 const vitestConfig = defineConfig({
   files: ["**/?(*.)+(test|spec).{js,jsx,ts,tsx}"],
@@ -186,6 +221,7 @@ export default defineConfig(
   ...reactQueryConfig,
   ...fsdImportConfig,
   ...apiConfig,
+  ...apiReachableConfig,
   ...vitestConfig,
   ...reactTestingLibraryConfig,
   ...prettierConfig,

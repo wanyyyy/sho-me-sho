@@ -5,7 +5,7 @@ import {
   repeatRows,
   type TemplateDocument,
   type TemplateField,
-} from "@/shared/lib/template";
+} from "../../shared/lib/template/index.ts";
 
 /** 가족관계증명서(상세) 고정 칸 키 */
 export const FK = {

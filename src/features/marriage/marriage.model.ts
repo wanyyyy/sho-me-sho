@@ -2,7 +2,7 @@ import type {
   DocumentTemplate,
   TemplateField,
   TemplateSection,
-} from "@/shared/lib/template";
+} from "../../shared/lib/template/index.ts";
 
 /** 사건본인 행 수 (원본 양식 고정) */
 export const PERSON_ROWS = [0, 1, 2, 3] as const;

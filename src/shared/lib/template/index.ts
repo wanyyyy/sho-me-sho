@@ -1,2 +1,2 @@
-export * from "./template.lib";
-export * from "./template.types";
+export * from "./template.lib.ts";
+export * from "./template.types.ts";

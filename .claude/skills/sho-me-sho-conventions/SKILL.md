@@ -17,6 +17,7 @@ description: >
 - 외부 레이어는 슬라이스의 `index.ts`(Public API)만 import한다. 내부 파일 직접 접근은 ESLint `no-restricted-imports`가 막는다.
 - 슬라이스 내부 참조는 상대경로(`./foo.lib`).
 - import 순서: 외부 패키지 → `@/shared` → `@/entities` → `@/features` → `@/widgets` → `@/pages` → 상대경로. CSS import는 맨 마지막.
+- **예외: `api/`가 가져오는 src 파일** (features `*.model.ts`·`*.mock.ts`, `certificate.contracts/types.ts`, `shared/lib/template/*`, `file-kind.lib.ts`)은 `@/` 별칭 금지, 상대 경로 + `.ts` 확장자(`../../shared/lib/template/index.ts`). Vercel 함수는 Node ESM 그대로 돌아 별칭을 못 풀고 500이 난다. ESLint `apiReachableConfig`가 검사한다.
 
 | 레이어     | 역할                                                                                                                                                   |
 | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |

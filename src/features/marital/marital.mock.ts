@@ -1,5 +1,8 @@
-import { sampleField, type TemplateSample } from "@/shared/lib/template";
-import { MK } from "./marital.model";
+import {
+  sampleField,
+  type TemplateSample,
+} from "../../shared/lib/template/index.ts";
+import { MK } from "./marital.model.ts";
 
 const hi = sampleField("high");
 const mid = sampleField("medium");

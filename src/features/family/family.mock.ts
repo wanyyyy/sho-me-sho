@@ -2,8 +2,8 @@ import {
   sampleField,
   sampleRow,
   type TemplateSample,
-} from "@/shared/lib/template";
-import { FAMILY_REPEAT, FK } from "./family.model";
+} from "../../shared/lib/template/index.ts";
+import { FAMILY_REPEAT, FK } from "./family.model.ts";
 
 const hi = sampleField("high");
 const mid = sampleField("medium");

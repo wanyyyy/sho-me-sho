@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { GET } from "./extract.ts";
 
@@ -20,5 +21,22 @@ describe("GET /api/extract (설정 점검)", () => {
 
     vi.stubEnv("VITE_ACCESS_CODE_HASH", "wanylog!");
     expect(await (await GET()).json()).toMatchObject({ gate: "invalid-hash" });
+  });
+});
+
+describe("Vercel 런타임 import", () => {
+  it("별칭 없이 순수 Node ESM 으로 불러와진다 (@/ 나 확장자 없는 import 가 있으면 배포에서 500)", () => {
+    const result = spawnSync(
+      process.execPath,
+      [
+        "--experimental-transform-types",
+        "--no-warnings",
+        "-e",
+        'import("./api/extract.ts").then((m) => { if (typeof m.POST !== "function") process.exit(1); })',
+      ],
+      { encoding: "utf8" },
+    );
+    expect(result.stderr).toBe("");
+    expect(result.status).toBe(0);
   });
 });
